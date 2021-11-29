@@ -1,0 +1,33 @@
+#pragma kernel MatMult
+
+
+RWStructuredBuffer<float> left;
+RWStructuredBuffer<float> right;
+RWStructuredBuffer<float> output;
+
+int mDim;
+int innerDim
+int nDim;
+
+int batches;
+
+int count;
+
+[numthreads(64, 1, 1)]
+void MatMult(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+
+    int matSize = mDim * nDIm;
+
+    int ind_raw = id.x;
+
+    int batch = ind_raw / matSize; // which batch are we using
+    int batch_ind = ind_raw % matSize; // index inside that batch
+    // x * yshape + y
+
+    // get left offset
+    
+}
+

@@ -1,0 +1,77 @@
+#pragma kernel Add
+#pragma kernel Add_InplaceL
+#pragma kernel Add_InplaceR
+#pragma kernel Add_Self
+#pragma kernel Add_SelfInplace
+
+#pragma kernel Multiply
+#pragma kernel Multiply_InplaceL
+#pragma kernel Multiply_InplaceR
+#pragma kernel Multiply_Self
+#pragma kernel Multiply_SelfInplace
+
+#pragma kernel Subtract
+#pragma kernel Subtract_InplaceL
+#pragma kernel Subtract_InplaceR
+#pragma kernel Subtract_Self
+#pragma kernel Subtract_SelfInplace
+
+
+#define BUILD(n) \
+    [numthreads(64, 1, 1)]\
+    void n(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(left, right, output, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_InplaceL(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(left, right, left, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_InplaceR(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(left, right, right, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_Self(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(left, left, output, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_SelfInplace(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(left, left, left, id.x);\
+    }
+
+
+RWStructuredBuffer<float> left;
+RWStructuredBuffer<float> right;
+RWStructuredBuffer<float> output;
+int count;
+
+
+void _Add(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    o[x] = l[x] + r[x];
+}
+void _Multiply(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    o[x] = l[x] * r[x];
+}
+void _Subtract(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    o[x] = l[x] - r[x];
+}
+
+
+BUILD(Add)
+BUILD(Multiply)
+BUILD(Subtract)

@@ -1,0 +1,38 @@
+#pragma kernel Add
+#pragma kernel Add_Inplace
+#pragma kernel Multiply
+#pragma kernel Multiply_Inplace
+
+#define BUILD(n) \
+    [numthreads(64, 1, 1)]\
+    void n(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(input, output, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_Inplace(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(input, input, id.x);\
+    }
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> output;
+
+float p;
+int count;
+
+
+void _Add(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    o[x] = i[x] + p;
+}
+BUILD(Add)
+void _Multiply(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    o[x] = i[x] * p;
+}
+BUILD(Multiply)
+

@@ -1,0 +1,25 @@
+#pragma kernel Zero
+#pragma kernel One
+
+
+RWStructuredBuffer<float> input;
+int count;
+
+
+[numthreads(64, 1, 1)]
+void One(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+    input[id.x] = 1;
+}
+
+
+[numthreads(64, 1, 1)]
+void Zero(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+    input[id.x] = 0;
+}
+

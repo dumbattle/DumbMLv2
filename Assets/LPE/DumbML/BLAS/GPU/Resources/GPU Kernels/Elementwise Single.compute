@@ -1,0 +1,82 @@
+#pragma kernel Abs
+#pragma kernel Abs_Inplace
+
+#pragma kernel Copy
+#pragma kernel Copy_Inplace
+
+#pragma kernel Exp
+
+#pragma kernel Exp_Inplace
+#pragma kernel Log
+#pragma kernel Log_Inplace
+
+#pragma kernel LeakyReLU
+#pragma kernel LeakyReLU_Inplace
+
+#pragma kernel ReLU
+#pragma kernel ReLU_Inplace
+
+#pragma kernel Sqr
+#pragma kernel Sqr_Inplace
+
+
+#define BUILD(n) \
+    [numthreads(64, 1, 1)]\
+    void n(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(input, output, id.x);\
+    }\
+    [numthreads(64, 1, 1)]\
+    void n##_Inplace(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        _##n(input, input, id.x);\
+    }
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> output;
+int count;
+
+
+void _Abs(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float val = i[x];
+    o[x] = val < 0 ? -val : val;
+}
+BUILD(Abs)
+
+void _Copy(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    o[x] = i[x];
+}
+BUILD(Copy)
+
+void _Exp(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    o[x] = exp(i[x]);
+}
+BUILD(Exp)
+
+void _LeakyReLU(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float val = i[x];
+    o[x] = val < 0 ? val * .001f : val;
+}
+BUILD(LeakyReLU)
+
+void _Log(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    o[x] = log(i[x]);
+}
+BUILD(Log)
+
+void _ReLU(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float val = i[x];
+    o[x] = val < 0 ? 0 : val;
+}
+BUILD(ReLU)
+
+void _Sqr(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float val = i[x];
+    o[x] = val * val;
+}
+BUILD(Sqr)
