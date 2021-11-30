@@ -2,7 +2,7 @@
 using System;
 
 namespace DumbML.BLAS.CPU {
-    public static class MaxtrixMult {
+    public static class MatrixMult {
         static ObjectPool<ComputeDelegateCache> forwardIterationPool
             = new ObjectPool<ComputeDelegateCache>(() => new ComputeDelegateCache());
 

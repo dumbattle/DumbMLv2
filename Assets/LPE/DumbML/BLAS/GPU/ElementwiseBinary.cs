@@ -1,18 +1,23 @@
 ﻿using UnityEngine;
+using System;
+
 
 namespace DumbML.BLAS.GPU {
-    struct Names {
-        public string normal;
-        public string inplaceL;
-        public string inplaceR;
-        public string self;
-        public string selfInplace;
-    }
+
+
     public static class ElementwiseBinary {
         private const string _InplaceL = "_InplaceL";
         private const string _InplaceR = "_InplaceR";
         private const string _Self = "_Self";
         private const string _SelfInplace = "_SelfInplace";
+
+        struct Names {
+            public string normal;
+            public string inplaceL;
+            public string inplaceR;
+            public string self;
+            public string selfInplace;
+        }
 
         static void Call(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output, Names names) {
             if (left == right) {
@@ -39,13 +44,14 @@ namespace DumbML.BLAS.GPU {
         static void Call_Normal(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output, string kernelName) {
             // check shape
             if (!left.shape.CompareContents(right.shape)) {
-                throw new System.ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
+                throw new ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
             }
             if (!left.shape.CompareContents(output.shape)) {
-                throw new System.ArgumentException($"Output tensor does not have same shape: Got: {output.shape.ContentString()} Expected: {right.shape.ContentString()}");
+                throw new ArgumentException($"Output tensor does not have same shape: Got: {output.shape.ContentString()} Expected: {right.shape.ContentString()}");
             }
 
             ComputeShader shader = Kernels.elementWiseBinary;
+
             ComputeBuffer leftBuffer = left.buffer;
             ComputeBuffer rightBuffer = right.buffer;
             ComputeBuffer outputBuffer = output.buffer;

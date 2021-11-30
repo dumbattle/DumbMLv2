@@ -5,13 +5,32 @@ RWStructuredBuffer<float> left;
 RWStructuredBuffer<float> right;
 RWStructuredBuffer<float> output;
 
+int4 lshape[16];
+int4 rshape[16];
+int4 oshape[16];
+
+int lrank;
+int rrank;
+int orank;
+
+// matrix mult dims
 int mDim;
-int innerDim
+int innerDim;
 int nDim;
 
-int batches;
-
+// output size
 int count;
+
+uint GetLShape(uint ind) {
+    return lshape[ind / 4][ind % 4];
+}
+uint GetRShape(uint ind) {
+    return rshape[ind / 4][ind % 4];
+}
+uint GetOShape(uint ind) {
+    return oshape[ind / 4][ind % 4];
+}
+
 
 [numthreads(64, 1, 1)]
 void MatMult(uint3 id : SV_DispatchThreadID) {
@@ -19,15 +38,74 @@ void MatMult(uint3 id : SV_DispatchThreadID) {
         return;
     }
 
-    int matSize = mDim * nDIm;
+    uint matSize = mDim * nDim;
 
-    int ind_raw = id.x;
+    uint ind_raw = id.x;
 
-    int batch = ind_raw / matSize; // which batch are we using
-    int batch_ind = ind_raw % matSize; // index inside that batch
-    // x * yshape + y
+    uint batch = ind_raw / matSize; // which batch are we on
+    uint batch_ind = ind_raw % matSize; // index inside that batch
 
-    // get left offset
+
+    uint _;
+
+    uint ldims = lrank;
+    uint rdims = rrank;
+    uint ddims = orank;
+
+    uint lx = GetLShape(ldims - 2);
+    uint ly = GetLShape(ldims - 1);
+    uint rx = GetRShape(rdims - 2);
+    uint ry = GetRShape(rdims - 1);
+
+
+    // get left right batches
+    uint lind = 0;
+    uint rind = 0;
+    uint remaining = batch;
+    uint stride = count / matSize;
+
+    for (int j = ddims; j > 2; j--) {
+        int ll = ldims - j;
+        int rr = rdims - j;
+        int dd = ddims - j;
+
+        uint lsize = ll >= 0 ? GetLShape(ll) : 1;
+        uint rsize = rr >= 0 ? GetRShape(rr) : 1;
+        uint dsize = GetOShape(dd);
+
+        stride /= dsize;
+        uint ind = remaining / stride; // value at this index
+        remaining %= stride;
+
     
+        // if broadcast (ie. shape is 1), do not update ind
+        if (lsize != 1) {
+            lind += ind * stride;
+        }
+        if (rsize != 1) {
+            rind += ind * stride;
+        }
+    }
+
+    // compute 
+    uint loffset = lx * ly * lind;
+    uint roffset = rx * ry * rind;
+    uint doffset = lx * ry * batch;
+
+    uint x = batch_ind / ry;
+    uint y = batch_ind % ry;
+
+    float sum = 0;
+    uint ri = y + roffset;
+    uint li = x * ly + loffset;
+
+    for (uint k = 0; k < ly; k++) {
+        float a = left[li];
+        float b = right[ri];
+        sum += a * b;
+        ri += ry;
+        li++;
+    }
+    output[id.x] = sum;
 }
 

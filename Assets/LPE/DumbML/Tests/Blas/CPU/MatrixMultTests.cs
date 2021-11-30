@@ -18,7 +18,7 @@ namespace Tests.BLAS.CPU {
             bb.CopyFrom(b);
 
 
-            DumbML.BLAS.CPU.MaxtrixMult.Compute(ab, bb, ob);
+            DumbML.BLAS.CPU.MatrixMult.Compute(ab, bb, ob);
             ob.CopyTo(o);
 
             CollectionAssert.AreEqual(e.data, o.data);
@@ -61,5 +61,6 @@ namespace Tests.BLAS.CPU {
                       { 39, -54, 27 } } } };
             Run(_a, _b, _e);
         }
+   
     }
 }

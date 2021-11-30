@@ -1,6 +1,6 @@
 ﻿namespace DumbML {
 
-    public interface ITensorBuffer {
+    public interface ITensorBuffer:System.IDisposable {
         int[] shape { get; }
         int size { get; }
         Device device { get; }
@@ -9,8 +9,5 @@
 
         void CopyFrom(Tensor t);
         void CopyTo(Tensor t);
-
-
-        void Dispose();
     }
 }
