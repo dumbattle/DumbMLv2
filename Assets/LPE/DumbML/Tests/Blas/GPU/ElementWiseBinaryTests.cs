@@ -8,14 +8,14 @@ using DumbML;
 namespace Tests.BLAS {
     namespace GPU {
         public class ElementWiseBinaryTests {
-            static void Run(Action<GPUTensorBuffer, GPUTensorBuffer, GPUTensorBuffer> GPUCall, Func<CPUTensorBuffer, CPUTensorBuffer, CPUTensorBuffer> CPPUOp, float eps = 1e-5f) {
-                GPUTensorBuffer leftGPU = new GPUTensorBuffer(3, 4, 2);
-                GPUTensorBuffer rightGPU = new GPUTensorBuffer(3, 4, 2);
-                GPUTensorBuffer outputGPU = new GPUTensorBuffer(3, 4, 2);
+            static void Run(Action<FloatGPUTensorBuffer, FloatGPUTensorBuffer, FloatGPUTensorBuffer> GPUCall, Func<FloatCPUTensorBuffer, FloatCPUTensorBuffer, FloatCPUTensorBuffer> CPPUOp, float eps = 1e-5f) {
+                FloatGPUTensorBuffer leftGPU = new FloatGPUTensorBuffer(3, 4, 2);
+                FloatGPUTensorBuffer rightGPU = new FloatGPUTensorBuffer(3, 4, 2);
+                FloatGPUTensorBuffer outputGPU = new FloatGPUTensorBuffer(3, 4, 2);
 
-                CPUTensorBuffer leftCPU = new CPUTensorBuffer(3, 4, 2);
-                CPUTensorBuffer rightCPU = new CPUTensorBuffer(3, 4, 2);
-                CPUTensorBuffer outputGPU2CPU = new CPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer leftCPU = new FloatCPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer rightCPU = new FloatCPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer outputGPU2CPU = new FloatCPUTensorBuffer(3, 4, 2);
 
                 for (int i = 0; i < leftCPU.size; i++) {
                     leftCPU.buffer[i] = UnityEngine.Random.Range(-1f, 1f);
@@ -43,7 +43,7 @@ namespace Tests.BLAS {
             public static void Add() {
                 Run((l, r, o) => DumbML.BLAS.GPU.ElementwiseBinary.Add(l, r, o),
                     (l, r) => {
-                        CPUTensorBuffer result = new CPUTensorBuffer(l.shape);
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(l.shape);
                         DumbML.BLAS.CPU.ElementwiseBinary.Add(l, r, result);
                         return result;
                     }

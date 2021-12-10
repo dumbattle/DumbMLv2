@@ -5,19 +5,18 @@ using DumbML;
 namespace Tests.BLAS {
     namespace GPU {
         public class MatrixMultTests {
-            void Run(Array left, Array right, Array expected) {
-                Tensor a = Tensor.FromArray(left);
-                Tensor b = Tensor.FromArray(right);
-                Tensor e = Tensor.FromArray(expected);
-                Tensor o = new Tensor(e.shape);
+            void Run(Array left, Array right, Array expected, bool tl, bool tr) {
+                FloatTensor a = FloatTensor.FromArray(left);
+                FloatTensor b = FloatTensor.FromArray(right);
+                FloatTensor e = FloatTensor.FromArray(expected);
+                FloatTensor o = new FloatTensor(e.shape);
 
-                using (GPUTensorBuffer ab = new GPUTensorBuffer(a.shape))
-                using (GPUTensorBuffer bb = new GPUTensorBuffer(b.shape))
-                using (GPUTensorBuffer ob = new GPUTensorBuffer(o.shape)) { 
-
+                using (FloatGPUTensorBuffer ab = new FloatGPUTensorBuffer(a.shape))
+                using (FloatGPUTensorBuffer bb = new FloatGPUTensorBuffer(b.shape))
+                using (FloatGPUTensorBuffer ob = new FloatGPUTensorBuffer(o.shape)) { 
                     ab.CopyFrom(a);
                     bb.CopyFrom(b);
-                    DumbML.BLAS.GPU.MatrixMult.Compute(ab, bb, ob);
+                    DumbML.BLAS.GPU.MatrixMult.Compute(ab, bb, ob, tl, tr);
                     ob.CopyTo(o);
 
                     CollectionAssert.AreEqual(e.data, o.data);
@@ -31,17 +30,17 @@ namespace Tests.BLAS {
                 float[,] a = { { 1, 2, 3 } };
                 float[,] b = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 12 } };
                 float[,] e = { { 38, 44, 50, 56 } };
-                Run(a, b, e);
+                Run(a, b, e, false, false);
             }
+
+
             [Test(Description = "Shapes: (3)x(3,4) - (3) is invalid. Expand to (1,3) to do MatrixMult")]
             public void Test2() {
                 float[] a = { 1, 2, 3 };
                 float[,] b = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 12 } };
                 float[,] e = { { 38, 44, 50, 56 } };
-                Assert.Throws<ArgumentException>(() => Run(a, b, e));
+                Assert.Throws<ArgumentException>(() => Run(a, b, e, false, false));
             }
-
-
 
 
             [Test(Description = "Shapes: (2,2,2,2)x(2,2,3)")]
@@ -57,7 +56,34 @@ namespace Tests.BLAS {
                       { -19, -26, -33 } },
                     { { 29, -40, 21 },
                       { 39, -54, 27 } } } };
-                Run(_a, _b, _e);
+                Run(_a, _b, _e, false, false);
+            }
+
+
+            [Test(Description = "Shapes: (3,1)Tx(3,4)")]
+            public void Test4() {
+                float[,] a = { { 1 }, { 2 }, { 3 } };
+                float[,] b = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 12 } };
+                float[,] e = { { 38, 44, 50, 56 } };
+                Run(a, b, e, true, false);
+            }
+
+
+            [Test(Description = "Shapes: (1,3)x(4,3)T")]
+            public void Test5() {
+                float[,] a = { { 1, 2, 3 } };
+                float[,] b = { { 1, 5, 9 }, { 2, 6, 10 }, { 3, 7, 11 }, { 4, 8, 12 } };
+                float[,] e = { { 38, 44, 50, 56 } };
+                Run(a, b, e, false, true);
+            }
+
+
+            [Test(Description = "Shapes: (3,1)Tx(4,3)T")]
+            public void Test6() {
+                float[,] a = { { 1 }, { 2 }, { 3 } };
+                float[,] b = { { 1, 5, 9 }, { 2, 6, 10 }, { 3, 7, 11 }, { 4, 8, 12 } };
+                float[,] e = { { 38, 44, 50, 56 } };
+                Run(a, b, e, true, true);
             }
 
 

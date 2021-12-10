@@ -2,7 +2,7 @@
 
 namespace DumbML.BLAS.CPU {
     public static class ElementWiseSingle {
-        public static void Copy(CPUTensorBuffer input, CPUTensorBuffer dest) {
+        public static void Copy(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest) {
             if (!ShapeUtility.SameShape(input.shape, dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }
@@ -11,7 +11,7 @@ namespace DumbML.BLAS.CPU {
                 dest.buffer[i] = input.buffer[i];
             }
         }
-        public static void Sqr(CPUTensorBuffer input, CPUTensorBuffer dest) {
+        public static void Sqr(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest) {
             if (!ShapeUtility.SameShape(input.shape, dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }

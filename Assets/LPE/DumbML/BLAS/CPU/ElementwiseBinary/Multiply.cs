@@ -1,6 +1,6 @@
 ﻿namespace DumbML.BLAS.CPU {
     public static partial class ElementwiseBinary {
-            public static void Multiply(CPUTensorBuffer a, CPUTensorBuffer b, CPUTensorBuffer output) {
+            public static void Multiply(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output) {
                 Computation<MultiplyDelegateCache>.Forward(a, b, output);
             }
         class MultiplyDelegateCache : ComputeDelegateCache {

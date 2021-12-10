@@ -63,7 +63,7 @@ namespace DumbML {
 
             foreach (var op in g.keys) {
                 if (op is Variable v) {
-                    var buf = BLAS.Engine.GetTensorBuffer(v.shape);
+                    var buf = BLAS.Engine.GetTensorBuffer(DType.Float, v.shape);
                     BLAS.Engine.Compute.Clear(buf);
                     result.Add(v, buf);
                 }

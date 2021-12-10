@@ -5,7 +5,8 @@ RWStructuredBuffer<float> left;
 RWStructuredBuffer<float> right;
 RWStructuredBuffer<float> output;
 
-int4 lshape[16];
+// int[] doesn't work (each element must a multiple of 16),
+int4 lshape[16]; 
 int4 rshape[16];
 int4 oshape[16];
 
@@ -17,6 +18,8 @@ int orank;
 int mDim;
 int innerDim;
 int nDim;
+bool transposeL;
+bool transposeR;
 
 // output size
 int count;
@@ -45,18 +48,18 @@ void MatMult(uint3 id : SV_DispatchThreadID) {
     uint batch = ind_raw / matSize; // which batch are we on
     uint batch_ind = ind_raw % matSize; // index inside that batch
 
-
     uint _;
+
+
 
     uint ldims = lrank;
     uint rdims = rrank;
     uint ddims = orank;
 
-    uint lx = GetLShape(ldims - 2);
-    uint ly = GetLShape(ldims - 1);
-    uint rx = GetRShape(rdims - 2);
-    uint ry = GetRShape(rdims - 1);
-
+    uint lx = GetLShape(transposeL ? ldims - 1 : ldims - 2);
+    uint ly = GetLShape(transposeL ? ldims - 2 : ldims - 1);
+    uint rx = GetRShape(transposeR ? rdims - 1 : rdims - 2);
+    uint ry = GetRShape(transposeR ? rdims - 2 : rdims - 1);
 
     // get left right batches
     uint lind = 0;
@@ -92,19 +95,26 @@ void MatMult(uint3 id : SV_DispatchThreadID) {
     uint roffset = rx * ry * rind;
     uint doffset = lx * ry * batch;
 
+    int lxStride = transposeL ? 1 : ly;
+    int liStride = transposeL ? lx : 1;
+
+    int riStride = transposeR ? 1 : ry;
+    int ryStride = transposeR ? rx : 1;
+
+
     uint x = batch_ind / ry;
     uint y = batch_ind % ry;
 
     float sum = 0;
-    uint ri = y + roffset;
-    uint li = x * ly + loffset;
+    uint ri = y * ryStride + roffset;
+    uint li = x * lxStride + loffset;
 
     for (uint k = 0; k < ly; k++) {
         float a = left[li];
         float b = right[ri];
         sum += a * b;
-        ri += ry;
-        li++;
+        ri += riStride;
+        li += liStride;
     }
     output[id.x] = sum;
 }

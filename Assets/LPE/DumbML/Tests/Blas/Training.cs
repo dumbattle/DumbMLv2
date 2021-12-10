@@ -22,8 +22,8 @@ namespace Tests.DumbMLTests {
             var op = new Add(a, b);
             var loss = Loss.MSE(op, input);
             Model m = new Model(new InputOp[] { input }, new Operation[] { op, loss });
-            Tensor outputTensor = new Tensor(1);
-            Tensor lossTensor = new Tensor(1);
+            FloatTensor outputTensor = new FloatTensor(1);
+            FloatTensor lossTensor = new FloatTensor(1);
 
             m.InitTraining(new SGD(momentum: 0, lr: .01f), loss);
             StringBuilder sb = new StringBuilder();
@@ -53,7 +53,7 @@ namespace Tests.DumbMLTests {
             }
 
             void Run() {
-                m.Call(Tensor.FromArray(new[] { 9 })).ToTensors(outputTensor, lossTensor);
+                m.Call(FloatTensor.FromArray(new[] { 9 })).ToTensors(outputTensor, lossTensor);
                 sb.Append($"Output: {outputTensor.data.ContentString()} Loss: {lossTensor.data.ContentString()}\n");
                 m.Backwards();
 

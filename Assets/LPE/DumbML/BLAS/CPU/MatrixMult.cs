@@ -7,8 +7,9 @@ namespace DumbML.BLAS.CPU {
             = new ObjectPool<ComputeDelegateCache>(() => new ComputeDelegateCache());
 
 
-        public static void Compute(CPUTensorBuffer l, CPUTensorBuffer r, CPUTensorBuffer dest) {
-            int numBatches = CheckShapes(l, r, dest);
+        public static void Compute(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest,
+                                   bool transposeL = false, bool transposeR = false) {
+            int numBatches = CheckShapes(l, r, dest, transposeL, transposeR);
 
             // compute
             ComputeDelegateCache forward = forwardIterationPool.Get();
@@ -16,13 +17,18 @@ namespace DumbML.BLAS.CPU {
             forward.right = r;
             forward.output = dest;
             forward.maxBatches = numBatches;
+            forward.transposeL = transposeL;
+            forward.transposeR = transposeR;
             var cb = ThreadPool.ForWithCallback(0, numBatches, forward.CallForwardAction);
             cb.Wait();
-
+            // for testing
+            //for (int i = 0; i < numBatches; i++) {
+            //    forward.CallForwardAction(i);
+            //}
             forwardIterationPool.Return(forward);
         }
 
-        private static int CheckShapes(CPUTensorBuffer l, CPUTensorBuffer r, CPUTensorBuffer dest) {
+        private static int CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
             int ldims = l.Rank();
             int rdims = r.Rank();
             int ddims = UnityEngine.Mathf.Max(ldims, rdims);
@@ -93,10 +99,10 @@ namespace DumbML.BLAS.CPU {
 
             // check shape compatability
 
-            int lx = l.shape[ldims - 2];
-            int ly = l.shape[ldims - 1];
-            int rx = r.shape[rdims - 2];
-            int ry = r.shape[rdims - 1];
+            int lx = l.shape[ldims - (tl ? 1 : 2)];
+            int ly = l.shape[ldims - (tl ? 2 : 1)];
+            int rx = r.shape[rdims - (tr ? 1 : 2)];
+            int ry = r.shape[rdims - (tr ? 2 : 1)];
 
             if (ly != rx) {
                 throw new InvalidOperationException($"Tensors do not have compatible dimensions: {l.shape.ContentString()}, {r.shape.ContentString()}");
@@ -115,13 +121,14 @@ namespace DumbML.BLAS.CPU {
         /// Creating delegates creates garbage (when we pass to thread pool), so we cache it in this class
         /// </summary>
         class ComputeDelegateCache {
-            public CPUTensorBuffer left;
-            public CPUTensorBuffer right;
-            public CPUTensorBuffer output;
+            public FloatCPUTensorBuffer left;
+            public FloatCPUTensorBuffer right;
+            public FloatCPUTensorBuffer output;
 
             public int maxBatches;
             public Action<int> CallForwardAction;
-
+            public bool transposeL;
+            public bool transposeR;
             public ComputeDelegateCache() {
                 CallForwardAction = CallForward;
                 //CallBackwardsAction = CallBackwards;
@@ -132,10 +139,10 @@ namespace DumbML.BLAS.CPU {
                 int rdims = right.Rank();
                 int ddims = output.Rank();
 
-                int lx = left.shape[ldims - 2];
-                int ly = left.shape[ldims - 1];
-                int rx = right.shape[rdims - 2];
-                int ry = right.shape[rdims - 1];
+                int lx = left.shape[transposeL ? ldims - 1: ldims - 2];
+                int ly = left.shape[transposeL ? ldims - 2 : ldims - 1];
+                int rx = right.shape[transposeR ? rdims - 1 : rdims - 2];
+                int ry = right.shape[transposeR ? rdims - 2 : rdims - 1];
 
 
                 var lv = left.buffer;
@@ -181,19 +188,38 @@ namespace DumbML.BLAS.CPU {
                 int roffset = rx * ry * rind;
                 int doffset = lx * ry * i;
 
+                int lxStride = 1;
+                int liStride = 1;
+
+                int riStride = 1;
+                int ryStride = 1;
+
+                if (transposeL) {
+                    liStride = lx;
+                }
+                else {
+                    lxStride = ly;
+                }
+                if (transposeR) {
+                    ryStride = rx;
+                }
+                else {
+                    riStride = ry;
+                }
+
                 int di = doffset;
                 for (int x = 0; x < lx; x++) {
                     for (int y = 0; y < ry; y++) {
                         float sum = 0;
-                        int ri = y + roffset;
-                        int li = x * ly + loffset;
+                        int li = x * lxStride + loffset;
+                        int ri = y * ryStride + roffset;
                         for (int j = 0; j < ly; j++) {
                             //sum += l[x, i] * r[i, y];
                             var a = lv[li];
                             var b = rv[ri];
                             sum += a * b;
-                            ri += ry;
-                            li++;
+                            li += liStride;
+                            ri += riStride;
                         }
                         //dest[x, y] += sum;
                         dv[di] = sum;

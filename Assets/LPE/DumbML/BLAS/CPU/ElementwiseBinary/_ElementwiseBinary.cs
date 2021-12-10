@@ -7,7 +7,7 @@ namespace DumbML.BLAS.CPU {
             static ObjectPool<T> cachePool
                 = new ObjectPool<T>(() => new T());
 
-            public static void Forward(CPUTensorBuffer a, CPUTensorBuffer b, CPUTensorBuffer output) {
+            public static void Forward(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output) {
                 int dims = a.Rank();
 
                 // check dims all match
@@ -38,9 +38,9 @@ namespace DumbML.BLAS.CPU {
 
 
         abstract class ComputeDelegateCache {
-            CPUTensorBuffer left;
-            CPUTensorBuffer right;
-            CPUTensorBuffer output;
+            FloatCPUTensorBuffer left;
+            FloatCPUTensorBuffer right;
+            FloatCPUTensorBuffer output;
 
             int stride;
 
@@ -51,7 +51,7 @@ namespace DumbML.BLAS.CPU {
             }
 
 
-            public void SetForward(CPUTensorBuffer left, CPUTensorBuffer right, CPUTensorBuffer output, int stride) {
+            public void SetForward(FloatCPUTensorBuffer left, FloatCPUTensorBuffer right, FloatCPUTensorBuffer output, int stride) {
                 this.left = left;
                 this.right = right;
                 this.output = output;

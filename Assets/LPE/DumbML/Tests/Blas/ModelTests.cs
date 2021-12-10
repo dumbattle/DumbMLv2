@@ -29,13 +29,13 @@ namespace Tests.DumbMLTests {
 
             Model m = new Model(new[] { inA, inB, inC }, new[] { op45, op56, op64 });
 
-            Tensor a = Tensor.FromArray(new[] { 1 });
-            Tensor b = Tensor.FromArray(new[] { 1 });
-            Tensor c = Tensor.FromArray(new[] { 1 });
+            FloatTensor a = FloatTensor.FromArray(new[] { 1 });
+            FloatTensor b = FloatTensor.FromArray(new[] { 1 });
+            FloatTensor c = FloatTensor.FromArray(new[] { 1 });
 
-            Tensor oa = new Tensor(op45.shape);
-            Tensor ob = new Tensor(op56.shape);
-            Tensor oc = new Tensor(op64.shape);
+            FloatTensor oa = new FloatTensor(op45.shape);
+            FloatTensor ob = new FloatTensor(op56.shape);
+            FloatTensor oc = new FloatTensor(op64.shape);
 
             m.Call(a, b, c).ToTensors(oa, ob, oc);
 

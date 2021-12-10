@@ -67,7 +67,7 @@ namespace DumbML {
 
 
 
-        public IReadOnlyList<ITensorBuffer> Call(params Tensor[] inputs) {
+        public IReadOnlyList<ITensorBuffer> Call(params FloatTensor[] inputs) {
             if (inputs.Length != inputNodes.Length) {
                 throw new ArgumentException($"Worng number of inputs received\n  Expected: {inputNodes.Length}\n  Got: {inputs.Length}");
             }

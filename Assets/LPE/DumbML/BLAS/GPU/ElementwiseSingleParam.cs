@@ -2,7 +2,7 @@
 
 namespace DumbML.BLAS.GPU {
     public static class ElementwiseSingleParam {
-        static void Call(GPUTensorBuffer input, GPUTensorBuffer output, string kernelName, string inplaceName, float p) {
+        static void Call(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, string kernelName, string inplaceName, float p) {
             if (output == input) {
                 Call_Inplace(input, inplaceName, p);
             }
@@ -11,7 +11,7 @@ namespace DumbML.BLAS.GPU {
             }
         }
 
-        static void Call_Inplace(GPUTensorBuffer input, string kernelName, float p) {
+        static void Call_Inplace(FloatGPUTensorBuffer input, string kernelName, float p) {
             ComputeShader shader = Kernels.elementWiseSingleParam;
             ComputeBuffer inputBuffer = input.buffer;
             int kernelID = shader.FindKernel(kernelName);
@@ -22,7 +22,7 @@ namespace DumbML.BLAS.GPU {
             int size = input.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_Normal(GPUTensorBuffer input, GPUTensorBuffer output, string kernelName, float p) {
+        static void Call_Normal(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, string kernelName, float p) {
             if (!input.shape.CompareContents(output.shape)) {
                 throw new System.ArgumentException($"Input and output tensors do not have same shape: {input.shape.ContentString()} vs {output.shape.ContentString()}");
             }
@@ -41,14 +41,14 @@ namespace DumbML.BLAS.GPU {
 
 
 
-        public static void Add(GPUTensorBuffer input, GPUTensorBuffer output, float v) {
+        public static void Add(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, float v) {
             const string name = "Add";
             const string inplace = name + "_Inplace";
 
             Call(input, output, name, inplace, v);
         }
 
-        public static void Multiply(GPUTensorBuffer input, GPUTensorBuffer output, float v) {
+        public static void Multiply(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, float v) {
             const string name = "Multiply";
             const string inplace = name + "_Inplace";
 

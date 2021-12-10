@@ -9,11 +9,13 @@ namespace DumbML {
         public Operation[] inner;
 
         public string name { get; private set; }
+        public DType dtype { get; private set; }
 
-        protected void BuildOp(int[] shape, params Operation[] inner) {
+
+        protected void BuildOp(int[] shape, DType dtype, params Operation[] inner) {
             this.shape = (int[])shape.Clone();
             this.inner = (Operation[])inner.Clone();
-
+            this.dtype = dtype;
 
         }
 

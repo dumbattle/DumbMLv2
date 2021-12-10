@@ -1,129 +1,133 @@
 ﻿namespace DumbML.BLAS {
     public static partial class Engine {
         public static class Compute {
+            static FloatGPUTensorBuffer AsFloatGPU(ITensorBuffer src) {
+                if (src is FloatGPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected float GPU tensor buffer\nGot{src.GetType()}");
+            }
+            static FloatCPUTensorBuffer AsFloatCPU(ITensorBuffer src) {
+                if (src is FloatCPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected float CPU tensor buffer\nGot{src.GetType()}");
+            }
+            static IntGPUTensorBuffer AsIntGPU(ITensorBuffer src) {
+                if (src is IntGPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected int GPU tensor buffer\nGot{src.GetType()}");
+            }
+            static IntCPUTensorBuffer AsIntCPU(ITensorBuffer src) {
+                if (src is IntCPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected int CPU tensor buffer\nGot{src.GetType()}");
+            }
+
+
+
             public static void Add(ITensorBuffer a, ITensorBuffer dest, float val) {
                 Device deviceType = AssertSameDeviceType(a, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseSingleParam.Add((GPUTensorBuffer)a, (GPUTensorBuffer)dest, val);
+                    GPU.ElementwiseSingleParam.Add(AsFloatGPU(a), AsFloatGPU(dest), val);
                 }
                 else {
-                    CPU.ElementWiseFloatParam.Add((CPUTensorBuffer)a, (CPUTensorBuffer)dest, val);
+                    CPU.ElementWiseFloatParam.Add(AsFloatCPU(a), AsFloatCPU(dest), val);
                 }
             }
             public static void Add(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseBinary.Add((GPUTensorBuffer)a, (GPUTensorBuffer)b, (GPUTensorBuffer)dest);
+                    GPU.ElementwiseBinary.Add(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementwiseBinary.Add((CPUTensorBuffer)a, (CPUTensorBuffer)b, (CPUTensorBuffer)dest);
+                    CPU.ElementwiseBinary.Add(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
             public static void Copy(ITensorBuffer src, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(src, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseSingle.Copy((GPUTensorBuffer)src, (GPUTensorBuffer)dest);
+                    GPU.ElementwiseSingle.Copy(AsFloatGPU(src), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementWiseSingle.Copy((CPUTensorBuffer)src, (CPUTensorBuffer)dest);
+                    CPU.ElementWiseSingle.Copy(AsFloatCPU(src), AsFloatCPU(dest));
                 }
             }
-
             public static void Clear(ITensorBuffer buffer) {
                 Device d = buffer.device;
 
                 if (d == Device.gpu) {
-                    GPU.SetValues.Zero((GPUTensorBuffer)buffer);
+                    GPU.SetValues.Zero(AsFloatGPU(buffer));
                 }
                 else {
-                    CPU.SetValues.Zero((CPUTensorBuffer)buffer);
+                    CPU.SetValues.Zero(AsFloatCPU(buffer));
                 }
             }
+            public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, b, dest);
 
-
+                if (deviceType == Device.gpu) {
+                    GPU.MatrixMult.Compute(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.MatrixMult.Compute(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
+                }
+            }
             public static void Multiply(ITensorBuffer a, float val, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(a, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseSingleParam.Multiply((GPUTensorBuffer)a, (GPUTensorBuffer)dest, val);
+                    GPU.ElementwiseSingleParam.Multiply(AsFloatGPU(a), AsFloatGPU(dest), val);
                 }
                 else {
-                    CPU.ElementWiseFloatParam.Multiply((CPUTensorBuffer)a, (CPUTensorBuffer)dest, val);
+                    CPU.ElementWiseFloatParam.Multiply(AsFloatCPU(a), AsFloatCPU(dest), val);
                 }
             }
             public static void Multiply(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseBinary.Multiply((GPUTensorBuffer)a, (GPUTensorBuffer)b, (GPUTensorBuffer)dest);
+                    GPU.ElementwiseBinary.Multiply(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementwiseBinary.Multiply((CPUTensorBuffer)a, (CPUTensorBuffer)b, (CPUTensorBuffer)dest);
+                    CPU.ElementwiseBinary.Multiply(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
             public static void SetTo1s(ITensorBuffer buffer) {
                 Device d = buffer.device;
 
                 if (d == Device.gpu) {
-                    GPU.SetValues.One((GPUTensorBuffer)buffer);
+                    GPU.SetValues.One(AsFloatGPU(buffer));
                 }
                 else {
-                    CPU.SetValues.One((CPUTensorBuffer)buffer);
+                    CPU.SetValues.One(AsFloatCPU(buffer));
                 }
             }
             public static void Square(ITensorBuffer src, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(src, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseSingle.Sqr((GPUTensorBuffer)src, (GPUTensorBuffer)dest);
+                    GPU.ElementwiseSingle.Sqr(AsFloatGPU(src), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementWiseSingle.Sqr((CPUTensorBuffer)src, (CPUTensorBuffer)dest);
+                    CPU.ElementWiseSingle.Sqr(AsFloatCPU(src), AsFloatCPU(dest));
                 }
             }
             public static void Subtract(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseBinary.Subtract((GPUTensorBuffer)a, (GPUTensorBuffer)b, (GPUTensorBuffer)dest);
+                    GPU.ElementwiseBinary.Subtract(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementwiseBinary.Subtract((CPUTensorBuffer)a, (CPUTensorBuffer)b, (CPUTensorBuffer)dest);
+                    CPU.ElementwiseBinary.Subtract(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
-            //public static void Add(ITensorBuffer a, ITensorBuffer b, ITensorBuffer d) {
-            //    if (GPUEnabled) {
-            //        GPU.ElementwiseBinary.Add(a.GetGPUTensor(), b.GetGPUTensor(), d.GetGPUTensor());
-            //    }
-            //    else {
-            //        CPU.ElementwiseBinary.Add(a.GetCPUTensor(), b.GetCPUTensor(), d.GetCPUTensor());
-            //    }
-            //}
-            //public static void MatrixMult2x2(ITensorBuffer l, ITensorBuffer r, ITensorBuffer dest) {
-            //    if (GPUEnabled) {
-
-            //    }
-            //    else {
-            //        CPU.MaxtrixMult2x2.Compute(l.GetCPUTensor(), r.GetCPUTensor(), dest.GetCPUTensor());
-            //    }
-            //}
-            //public static void MatrixMult2x2Backwards(ITensorBuffer l, ITensorBuffer r, ITensorBuffer e, ITensorBuffer le, ITensorBuffer re) {
-            //    if (GPUEnabled) {
-
-            //    }
-            //    else {
-            //        CPU.MaxtrixMult2x2.Backwards(l.GetCPUTensor(), r.GetCPUTensor(), e.GetCPUTensor(), le.GetCPUTensor(), re.GetCPUTensor());
-            //    }
-            //}
-            //public static void ClearData(ITensorBuffer t) {
-
-            //}
-            //public static void CopyValues(ITensorBuffer src, ITensorBuffer dest) {
-
-            //}
         }
     }
 

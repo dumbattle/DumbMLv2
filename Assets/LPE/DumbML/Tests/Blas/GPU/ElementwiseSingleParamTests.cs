@@ -7,15 +7,15 @@ using UnityEngine;
 namespace Tests.BLAS {
     namespace GPU {
         public class ElementwiseSingleParamTests {
-            static void Run(Action<GPUTensorBuffer, GPUTensorBuffer, float> GPUCall, Func<CPUTensorBuffer, float, CPUTensorBuffer> CPPUOp, float param, float eps = 1e-5f) {
-                GPUTensorBuffer inputGPU = new GPUTensorBuffer(3, 4, 2);
-                GPUTensorBuffer outputGPU = new GPUTensorBuffer(3, 4, 2);
+            static void Run(Action<FloatGPUTensorBuffer, FloatGPUTensorBuffer, float> GPUCall, Func<FloatCPUTensorBuffer, float, FloatCPUTensorBuffer> CPPUOp, float param, float eps = 1e-5f) {
+                FloatGPUTensorBuffer inputGPU = new FloatGPUTensorBuffer(3, 4, 2);
+                FloatGPUTensorBuffer outputGPU = new FloatGPUTensorBuffer(3, 4, 2);
 
-                CPUTensorBuffer inputCPU = new CPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer inputCPU = new FloatCPUTensorBuffer(3, 4, 2);
                 for (int i = 0; i < inputCPU.size; i++) {
                     inputCPU.buffer[i] = UnityEngine.Random.Range(-1f, 1f);
                 }
-                CPUTensorBuffer outputGPU2CPU = new CPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer outputGPU2CPU = new FloatCPUTensorBuffer(3, 4, 2);
 
                 inputGPU.CopyFrom(inputCPU);
 
@@ -32,7 +32,7 @@ namespace Tests.BLAS {
                 float v = 4;
                 Run((a, b, p) => DumbML.BLAS.GPU.ElementwiseSingleParam.Add(a, b, p),
                     (x, p) => {
-                        CPUTensorBuffer result = new CPUTensorBuffer(x.shape);
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(x.shape);
                         DumbML.BLAS.CPU.ElementWiseFloatParam.Add(x, result, p);
                         return result;
                     },

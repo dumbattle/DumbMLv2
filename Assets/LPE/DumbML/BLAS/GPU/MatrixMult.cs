@@ -4,8 +4,9 @@ using System;
 
 namespace DumbML.BLAS.GPU {
     public static class MatrixMult {
-        public static void Compute(GPUTensorBuffer l, GPUTensorBuffer r, GPUTensorBuffer dest) {
-            var (mDim, innerDim, nDim) = CheckShapes(l, r, dest);
+        public static void Compute(FloatGPUTensorBuffer l, FloatGPUTensorBuffer r, FloatGPUTensorBuffer dest,
+                                   bool transposeL = false, bool transposeR = false) {
+            var (mDim, innerDim, nDim) = CheckShapes(l, r, dest, transposeL, transposeR);
 
             ComputeBuffer leftBuffer = l.buffer;
             ComputeBuffer rightBuffer = r.buffer;
@@ -25,6 +26,8 @@ namespace DumbML.BLAS.GPU {
             shader.SetInt("lrank", l.Rank());
             shader.SetInt("rrank", r.Rank());
             shader.SetInt("orank", dest.Rank());
+            shader.SetBool("transposeL", transposeL);
+            shader.SetBool("transposeR", transposeR);
 
             shader.SetInt("mDim", mDim);
             shader.SetInt("innerDim", innerDim);
@@ -38,7 +41,7 @@ namespace DumbML.BLAS.GPU {
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
 
-        private static (int, int, int) CheckShapes(GPUTensorBuffer l, GPUTensorBuffer r, GPUTensorBuffer dest) {
+        private static (int, int, int) CheckShapes(FloatGPUTensorBuffer l, FloatGPUTensorBuffer r, FloatGPUTensorBuffer dest, bool tl, bool tr) {
             int ldims = l.Rank();
             int rdims = r.Rank();
             int ddims = Mathf.Max(ldims, rdims);
@@ -108,11 +111,10 @@ namespace DumbML.BLAS.GPU {
             }
 
             // check shape compatability
-
-            int lx = l.shape[ldims - 2];
-            int ly = l.shape[ldims - 1];
-            int rx = r.shape[rdims - 2];
-            int ry = r.shape[rdims - 1];
+            int lx = l.shape[ldims - (tl ? 1 : 2)];
+            int ly = l.shape[ldims - (tl ? 2 : 1)];
+            int rx = r.shape[rdims - (tr ? 1 : 2)];
+            int ry = r.shape[rdims - (tr ? 2 : 1)];
 
             if (ly != rx) {
                 throw new InvalidOperationException($"Tensors do not have compatible dimensions: {l.shape.ContentString()}, {r.shape.ContentString()}");

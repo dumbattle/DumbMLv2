@@ -7,16 +7,16 @@ using System;
 namespace Tests {
     namespace GPU {
         public class ElementwiseSingleTests {
-            static void Run(Action<GPUTensorBuffer, GPUTensorBuffer> GPUCall, Action<CPUTensorBuffer, CPUTensorBuffer> CPPUOp, float eps = 1e-5f) {
-                GPUTensorBuffer inputGPU = new GPUTensorBuffer(3, 4, 2);
-                GPUTensorBuffer outputGPU = new GPUTensorBuffer(3, 4, 2);
+            static void Run(Action<FloatGPUTensorBuffer, FloatGPUTensorBuffer> GPUCall, Action<FloatCPUTensorBuffer, FloatCPUTensorBuffer> CPPUOp, float eps = 1e-5f) {
+                FloatGPUTensorBuffer inputGPU = new FloatGPUTensorBuffer(3, 4, 2);
+                FloatGPUTensorBuffer outputGPU = new FloatGPUTensorBuffer(3, 4, 2);
 
-                CPUTensorBuffer inputCPU = new CPUTensorBuffer(3, 4, 2);
-                CPUTensorBuffer outputCPU = new CPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer inputCPU = new FloatCPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer outputCPU = new FloatCPUTensorBuffer(3, 4, 2);
                 for (int i = 0; i < inputCPU.size; i++) {
                     inputCPU.buffer[i] = UnityEngine.Random.Range(-1f, 1f);
                 }
-                CPUTensorBuffer outputGPU2CPU = new CPUTensorBuffer(3, 4, 2);
+                FloatCPUTensorBuffer outputGPU2CPU = new FloatCPUTensorBuffer(3, 4, 2);
                 inputGPU.CopyFrom(inputCPU);
 
 

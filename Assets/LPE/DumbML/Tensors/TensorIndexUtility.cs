@@ -3,7 +3,7 @@
 
 namespace DumbML {
     public static class TensorIndexUtility {
-        public static void CheckIndex(this Tensor t, params int[] indexes) {
+        public static void CheckIndex<T>(this Tensor<T> t, params int[] indexes) {
             if (indexes.Length != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {indexes.Length} Expected {t.shape.Length}");
             }
@@ -15,7 +15,7 @@ namespace DumbML {
             }
         }
 
-        public static void CheckIndex(this Tensor t, int a) {
+        public static void CheckIndex<T>(this Tensor<T> t, int a) {
             if (1 != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {1} Expected {t.shape.Length}");
             }
@@ -24,7 +24,7 @@ namespace DumbML {
                 throw new ArgumentOutOfRangeException("indexes", $"Shape: {t.shape.ContentString()}  Index:[{a}]");
             }
         }
-        public static void CheckIndex(this Tensor t, int a, int b) {
+        public static void CheckIndex<T>(this Tensor<T> t, int a, int b) {
             if (2 != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {2} Expected {t.shape.Length}");
             }
@@ -37,7 +37,7 @@ namespace DumbML {
                 throw new ArgumentOutOfRangeException("indexes", $"Shape: {t.shape.ContentString()}  Index:[{a}, {b}]");
             }
         }
-        public static void CheckIndex(this Tensor t, int a, int b, int c) {
+        public static void CheckIndex<T>(this Tensor<T> t, int a, int b, int c) {
             if (3 != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {3} Expected {t.shape.Length}");
             }
@@ -52,7 +52,7 @@ namespace DumbML {
             }
         }
 
-        public static void CheckIndex(this Tensor t, int a, int b, int c, int d) {
+        public static void CheckIndex<T>(this Tensor<T> t, int a, int b, int c, int d) {
             if (4 != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {3} Expected {t.shape.Length}");
             }
@@ -70,7 +70,7 @@ namespace DumbML {
 
 
 
-        public static int GetIndex(this Tensor t, params int[] indexes) {
+        public static int GetIndex<T>(this Tensor<T> t, params int[] indexes) {
             int result = 0;
             int scale = 1;
 
@@ -81,16 +81,16 @@ namespace DumbML {
 
             return result;
         }
-        public static int GetIndex(this Tensor t, int a) {
+        public static int GetIndex<T>(this Tensor<T> t, int a) {
             return a;
         }
-        public static int GetIndex(this Tensor t, int a, int b) {
+        public static int GetIndex<T>(this Tensor<T> t, int a, int b) {
             return a * t.shape[1] + b;
         }
-        public static int GetIndex(this Tensor t, int a, int b, int c) {
+        public static int GetIndex<T>(this Tensor<T> t, int a, int b, int c) {
             return (a * t.shape[1] + b) * t.shape[2] + c;
         }
-        public static int GetIndex(this Tensor t, int a, int b, int c, int d) {
+        public static int GetIndex<T>(this Tensor<T> t, int a, int b, int c, int d) {
             return ((a * t.shape[1] + b) * t.shape[2] + c) * t.shape[3] + d;
         }
 

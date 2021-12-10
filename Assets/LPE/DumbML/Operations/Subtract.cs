@@ -5,7 +5,7 @@
                 throw new System.ArgumentException($"Cannot subtract 2 Tensors of different shapes. {a.shape.ContentString()} - {b.shape.ContentString()}");
             }
 
-            BuildOp(a.shape, a, b);
+            BuildOp(a.shape, DType.Float, a, b);
         }
 
 

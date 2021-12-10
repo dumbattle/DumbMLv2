@@ -1,12 +1,7 @@
-using System.Collections;
-using System;
-using UnityEngine;
-
-
-namespace DumbML {
-    public class Tensor {
+﻿namespace DumbML {
+    public abstract class Tensor<T> {
         #region Indexers
-        public float this[params int[] index] {
+        public T this[params int[] index] {
             get {
                 this.CheckIndex(index);
                 int i = this.GetIndex(index);
@@ -19,7 +14,7 @@ namespace DumbML {
                 this.data[i] = value;
             }
         }
-        public float this[int a] {
+        public T this[int a] {
             get {
                 this.CheckIndex(a);
                 int i = this.GetIndex(a);
@@ -32,7 +27,7 @@ namespace DumbML {
                 this.data[i] = value;
             }
         }
-        public float this[int a, int b] {
+        public T this[int a, int b] {
             get {
                 this.CheckIndex(a, b);
                 int i = this.GetIndex(a, b);
@@ -45,7 +40,7 @@ namespace DumbML {
                 this.data[i] = value;
             }
         }
-        public float this[int a, int b, int c] {
+        public T this[int a, int b, int c] {
             get {
                 this.CheckIndex(a, b, c);
                 int i = this.GetIndex(a, b, c);
@@ -58,7 +53,7 @@ namespace DumbML {
                 this.data[i] = value;
             }
         }
-        public float this[int a, int b, int c, int d] {
+        public T this[int a, int b, int c, int d] {
             get {
                 this.CheckIndex(a, b, c, d);
                 int i = this.GetIndex(a, b, c, d);
@@ -73,11 +68,10 @@ namespace DumbML {
         }
         #endregion Indexers
 
-
-        public float[] data { get; private set; }
+        public T[] data { get; private set; }
+        public abstract DType dtype { get; }
         public int[] shape { get; private set; }
         public int size => data.Length;
-
 
         public Tensor(params int[] shape) {
             this.shape = (int[])shape.Clone();
@@ -88,29 +82,7 @@ namespace DumbML {
                 size *= i;
             }
 
-            data = new float[size];
-        }
-
-
-        public static Tensor FromArray(Array A) {
-            
-            int[] shape = new int[A.Rank];
-            for (int i = 0; i < A.Rank; i++) {
-                shape[i] = A.GetLength(i);
-            }
-          
-            Tensor result = new Tensor(shape);
-            int index = 0;
-
-            foreach (var val in A) {
-                result.data[index] = Convert.ToSingle(val);
-                index++;
-            }
-
-            return result;
+            data = new T[size];
         }
     }
-
-
-
 }

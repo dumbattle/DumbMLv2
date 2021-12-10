@@ -16,7 +16,7 @@ namespace DumbML {
         public Gradients(params Operation[] wrt) {
             foreach (var op in wrt) {
                 if (!grad.ContainsKey(op)) {
-                    grad.Add(op, BLAS.Engine.GetTensorBuffer(op.shape));
+                    grad.Add(op, BLAS.Engine.GetTensorBuffer(DType.Float, op.shape));
                 }
             }
             keys = grad.Keys.ToArray();
@@ -25,7 +25,7 @@ namespace DumbML {
         public Gradients(IEnumerable<Operation> wrt) {
             foreach (var op in wrt) {
                 if (!grad.ContainsKey(op)) {
-                    grad.Add(op, BLAS.Engine.GetTensorBuffer(op.shape));
+                    grad.Add(op, BLAS.Engine.GetTensorBuffer(DType.Float,op.shape));
                 }
             }
             keys = grad.Keys.ToArray();

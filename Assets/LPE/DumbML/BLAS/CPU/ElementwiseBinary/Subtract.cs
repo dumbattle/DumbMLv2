@@ -1,6 +1,6 @@
 ﻿namespace DumbML.BLAS.CPU {
     public static partial class ElementwiseBinary {
-            public static void Subtract(CPUTensorBuffer a, CPUTensorBuffer b, CPUTensorBuffer output) {
+            public static void Subtract(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output) {
                 Computation<SubtractDelegateCache>.Forward(a, b, output);
             }
 

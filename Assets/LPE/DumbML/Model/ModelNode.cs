@@ -13,8 +13,8 @@
         public ModelNode(Operation op, ModelNode[] inputNodes) {
             this.op = op;
 
-            outputBuffer = BLAS.Engine.GetTensorBuffer(op.shape);
-            errorBuffer = BLAS.Engine.GetTensorBuffer(op.shape);
+            outputBuffer = BLAS.Engine.GetTensorBuffer(op.dtype, op.shape);
+            errorBuffer = BLAS.Engine.GetTensorBuffer(op.dtype, op.shape);
 
             inputBuffers = new ITensorBuffer[inputNodes.Length];
             inputErrorBuffers = new ITensorBuffer[inputNodes.Length];
@@ -23,7 +23,7 @@
             for (int i = 0; i < inputNodes.Length; i++) {
                 inputBuffers[i] = inputNodes[i].outputBuffer;
                 inputErrorBuffers[i] = inputNodes[i].errorBuffer;
-                inputErrorTempBuffers[i] = BLAS.Engine.GetTensorBuffer(inputNodes[i].outputBuffer.shape);
+                inputErrorTempBuffers[i] = BLAS.Engine.GetTensorBuffer(DType.Float, inputNodes[i].outputBuffer.shape);
             }
         }
 

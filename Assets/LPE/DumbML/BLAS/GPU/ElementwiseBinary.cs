@@ -19,7 +19,7 @@ namespace DumbML.BLAS.GPU {
             public string selfInplace;
         }
 
-        static void Call(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output, Names names) {
+        static void Call(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output, Names names) {
             if (left == right) {
                 if (output == left) {
                     Call_SelfInplace(left, names.selfInplace);
@@ -41,7 +41,7 @@ namespace DumbML.BLAS.GPU {
         }
        
         
-        static void Call_Normal(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output, string kernelName) {
+        static void Call_Normal(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output, string kernelName) {
             // check shape
             if (!left.shape.CompareContents(right.shape)) {
                 throw new ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
@@ -66,7 +66,7 @@ namespace DumbML.BLAS.GPU {
             int size = output.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_Inplace(GPUTensorBuffer left, GPUTensorBuffer right, string kernelName) {
+        static void Call_Inplace(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, string kernelName) {
             // check shape
             if (!left.shape.CompareContents(right.shape)) {
                 throw new System.ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
@@ -85,7 +85,7 @@ namespace DumbML.BLAS.GPU {
             int size = left.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_Self(GPUTensorBuffer left, GPUTensorBuffer output, string kernelName) {
+        static void Call_Self(FloatGPUTensorBuffer left, FloatGPUTensorBuffer output, string kernelName) {
             // check shape
             if (!left.shape.CompareContents(output.shape)) {
                 throw new System.ArgumentException($"Output tensor does not have same shape: Got: {output.shape.ContentString()} Expected: {left.shape.ContentString()}");
@@ -104,7 +104,7 @@ namespace DumbML.BLAS.GPU {
             int size = output.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_SelfInplace(GPUTensorBuffer left, string kernelName) {
+        static void Call_SelfInplace(FloatGPUTensorBuffer left, string kernelName) {
 
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
@@ -122,7 +122,7 @@ namespace DumbML.BLAS.GPU {
 
 
 
-        public static void Add(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output) {
+        public static void Add(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Add";
             const string name2 = name1 + _InplaceL;
             const string name3 = name1 + _InplaceR;
@@ -138,7 +138,7 @@ namespace DumbML.BLAS.GPU {
 
             Call(left, right, output, n);
         }
-        public static void Multiply(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output) {
+        public static void Multiply(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Multiply";
             const string name2 = name1 + _InplaceL;
             const string name3 = name1 + _InplaceR;
@@ -154,7 +154,7 @@ namespace DumbML.BLAS.GPU {
 
             Call(left, right, output, n);
         }
-        public static void Subtract(GPUTensorBuffer left, GPUTensorBuffer right, GPUTensorBuffer output) {
+        public static void Subtract(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Subtract";
             const string name2 = name1 + _InplaceL;
             const string name3 = name1 + _InplaceR;

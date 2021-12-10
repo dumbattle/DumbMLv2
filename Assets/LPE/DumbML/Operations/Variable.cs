@@ -1,6 +1,6 @@
 ﻿namespace DumbML {
     public class Variable : Operation {
-        public Tensor value { get; private set; }
+        public FloatTensor value { get; private set; }
         public bool trainable;
 
         public Variable(params int[] shape) {
@@ -9,8 +9,8 @@
                     throw new System.ArgumentException($"Variable must have fixed sized shapes. Got: {shape.ContentString()}");
                 }
             }
-            BuildOp(shape);
-            value = new Tensor(shape);
+            BuildOp(shape, DType.Float);
+            value = new FloatTensor(shape);
             trainable = true;
         }
 

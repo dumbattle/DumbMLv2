@@ -1,17 +1,16 @@
 ﻿using UnityEngine;
 
 namespace DumbML {
-    public class GPUTensorBuffer : ITensorBuffer {
+    public abstract class GPUTensorBuffer : ITensorBuffer {
         public int[] shape { get; private set; }
         public int size { get; private set; }
         public Device device => Device.gpu;
+        public abstract DType dtype { get; }
 
 
         public ComputeBuffer buffer;
 
-
         int[] shapeConstraints;
-
 
 
         public GPUTensorBuffer(params int[] shape) {
@@ -25,8 +24,11 @@ namespace DumbML {
                 this.shape[i] = s;
                 size *= s;
             }
-            buffer = new ComputeBuffer(size, sizeof(float));
+            buffer = CreateNewBuffer(size);
         }
+
+        protected abstract ComputeBuffer CreateNewBuffer(int count);
+
 
         public void SetShape(int[] shape) {
             // check valid shape
@@ -39,7 +41,7 @@ namespace DumbML {
                 int s = shape[i];
 
                 if (s < 0) {
-                    
+
                     throw new System.ArgumentException($"Invalid shape ({shape.ContentString()})");
                 }
                 if (c >= 0 && c != shape[i]) {
@@ -58,36 +60,29 @@ namespace DumbML {
             // resize buffer if neccessary
             if (size > buffer.count) {
                 buffer.Dispose();
-                buffer = new ComputeBuffer(size, sizeof(float));
+                buffer = CreateNewBuffer(size);
             }
-
         }
 
-        public void CopyTo(CPUTensorBuffer dest) {
-            dest.CopyFrom(this);
-        }
-
-        public void CopyFrom(CPUTensorBuffer src) {
-            SetShape(src.shape);
-      
-            buffer.SetData(src.buffer, 0, 0, size);
-
-        }
-
-
-        public void CopyFrom(Tensor src) {
+        public void CopyFrom<T>(Tensor<T> src) {
+            if (src.dtype != dtype) {
+                throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {src.dtype}\nDest: {dtype}");
+            }
             SetShape(src.shape);
 
             buffer.SetData(src.data, 0, 0, size);
         }
 
-        public void CopyTo(Tensor dest) {
+        public void CopyTo<T>(Tensor<T> dest) {
+            if (dest.dtype != dtype) {
+                throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {dtype}\nDest: {dest.dtype}");
+            }
             if (!ShapeUtility.SameShape(shape, dest.shape)) {
                 throw new System.ArgumentException($"Destination tensor does not have correct shape. Expected: {shape.ContentString()} Got: {dest.shape.ContentString()}");
             }
             buffer.GetData(dest.data, 0, 0, size);
         }
-
+       
         public void Dispose() {
             buffer.Dispose();
 

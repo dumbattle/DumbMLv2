@@ -10,12 +10,26 @@ namespace DumbML.BLAS {
         }
 
 
-        public static ITensorBuffer GetTensorBuffer(params int[] shape) {
-            if (device == Device.cpu) {
-                return new CPUTensorBuffer(shape);
-            }
-            else if (device == Device.gpu) {
-                return new GPUTensorBuffer(shape);
+        public static ITensorBuffer GetTensorBuffer(DType type, params int[] shape) {
+            switch (type) {
+                case DType.Float:
+                    if (device == Device.cpu) {
+                        return new FloatCPUTensorBuffer(shape);
+                    }
+                    else if (device == Device.gpu) {
+                        return new FloatGPUTensorBuffer(shape);
+                    }
+                    break;
+                case DType.Int:
+                    if (device == Device.cpu) {
+                        return new IntCPUTensorBuffer(shape);
+                    }
+                    else if (device == Device.gpu) {
+                        return new IntGPUTensorBuffer(shape);
+                    }
+                    break;
+                default:
+                    throw new System.NotImplementedException($"No buffer with type: {type}");
             }
 
             return null;

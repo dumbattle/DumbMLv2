@@ -2,7 +2,7 @@
 
 namespace DumbML.BLAS.GPU {
     public static class SetValues {
-        public static void Zero(GPUTensorBuffer input) {
+        public static void Zero(FloatGPUTensorBuffer input) {
             ComputeShader shader = Kernels.setValues;
             ComputeBuffer inputBuffer = input.buffer;
             int kernelID = shader.FindKernel("Zero");
@@ -13,7 +13,7 @@ namespace DumbML.BLAS.GPU {
             int size = input.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        public static void One(GPUTensorBuffer input) {
+        public static void One(FloatGPUTensorBuffer input) {
             ComputeShader shader = Kernels.setValues;
             ComputeBuffer inputBuffer = input.buffer;
             int kernelID = shader.FindKernel("One");

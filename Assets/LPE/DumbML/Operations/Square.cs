@@ -1,7 +1,7 @@
 ﻿namespace DumbML {
     public class Square : Operation {
         public Square(Operation a) {
-            BuildOp(a.shape, a);
+            BuildOp(a.shape, DType.Float, a);
         }
 
 
