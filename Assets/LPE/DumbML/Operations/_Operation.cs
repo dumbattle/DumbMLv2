@@ -26,5 +26,8 @@ namespace DumbML {
         public void SetName(string name) {
             this.name = name;
         }
+        public static implicit operator Operation(float f) {
+            return new ConstantFloat(FloatTensor.FromArray(new float[] { f }));
+        }
     }
 }
