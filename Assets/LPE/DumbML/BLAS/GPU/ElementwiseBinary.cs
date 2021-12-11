@@ -54,14 +54,6 @@ namespace DumbML.BLAS.GPU {
        
         
         static void Call_Normal(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output, string kernelName) {
-            // check shape
-            if (!left.shape.CompareContents(right.shape)) {
-                throw new ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
-            }
-            if (!left.shape.CompareContents(output.shape)) {
-                throw new ArgumentException($"Output tensor does not have same shape: Got: {output.shape.ContentString()} Expected: {right.shape.ContentString()}");
-            }
-
             ComputeShader shader = Kernels.elementWiseBinary;
 
             ComputeBuffer leftBuffer = left.buffer;
@@ -79,11 +71,6 @@ namespace DumbML.BLAS.GPU {
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
         static void Call_Inplace(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, string kernelName) {
-            // check shape
-            if (!left.shape.CompareContents(right.shape)) {
-                throw new System.ArgumentException($"Input tensors do not have same shape: {left.shape.ContentString()} vs {right.shape.ContentString()}");
-            }
-
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
             ComputeBuffer rightBuffer = right.buffer;
@@ -98,11 +85,6 @@ namespace DumbML.BLAS.GPU {
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
         static void Call_Self(FloatGPUTensorBuffer left, FloatGPUTensorBuffer output, string kernelName) {
-            // check shape
-            if (!left.shape.CompareContents(output.shape)) {
-                throw new System.ArgumentException($"Output tensor does not have same shape: Got: {output.shape.ContentString()} Expected: {left.shape.ContentString()}");
-            }
-
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
             ComputeBuffer outputBuffer = output.buffer;
@@ -117,7 +99,6 @@ namespace DumbML.BLAS.GPU {
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
         static void Call_SelfInplace(FloatGPUTensorBuffer left, string kernelName) {
-
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
 

@@ -114,7 +114,6 @@ namespace Tests.DumbMLTests {
                     $"Loss did not decrease for ({fail}) value{(fail > 1 ? "s" : "")} out of {numIterations}" +
                     "This can be caused by the stochastic nature of training.  " +
                     "You should check or rerun to make sure.");
-
             }
 
             void Run() {
