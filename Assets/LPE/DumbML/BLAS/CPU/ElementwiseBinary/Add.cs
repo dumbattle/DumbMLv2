@@ -9,9 +9,9 @@ namespace DumbML.BLAS.CPU {
 
 
         class AddDelegateCache : ComputeDelegateCache {
-            public override void Forward(float[] a, float[] b, float[] d, int start, int end) {
-                for (int i = start; i < end; i++) {
-                    d[i] = a[i] + b[i];
+            public override void Forward(float[] a, float[] b, float[] d, int startL, int startR, int startD, int stride) {
+                for (int i = 0; i < stride; i++) {
+                    d[startD + i] = a[startL + i] + b[startR + i];
                 }
             }
         }

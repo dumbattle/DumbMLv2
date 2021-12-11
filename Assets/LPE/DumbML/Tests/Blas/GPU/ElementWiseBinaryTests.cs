@@ -49,6 +49,26 @@ namespace Tests.BLAS {
                     }
                 );
             }
+            [Test]
+            public static void Multiply() {
+                Run((l, r, o) => DumbML.BLAS.GPU.ElementwiseBinary.Multiply(l, r, o),
+                    (l, r) => {
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(l.shape);
+                        DumbML.BLAS.CPU.ElementwiseBinary.Multiply(l, r, result);
+                        return result;
+                    }
+                );
+            }
+            [Test]
+            public static void Subtract() {
+                Run((l, r, o) => DumbML.BLAS.GPU.ElementwiseBinary.Subtract(l, r, o),
+                    (l, r) => {
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(l.shape);
+                        DumbML.BLAS.CPU.ElementwiseBinary.Subtract(l, r, result);
+                        return result;
+                    }
+                );
+            }
         }
     }
 

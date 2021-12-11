@@ -40,16 +40,14 @@ namespace LPE {
                         ewh.WaitOne();
                         try {
                             task?.Invoke();
-
-                            // finish
-                            onComplete?.Invoke();
                         }
                         catch {
-                            ewh.Reset();
-                            task = null;
-                            onComplete = null;
-                            throw;
+                            // TODO Throw in main thread
                         }
+                        // finish
+                        onComplete?.Invoke();
+
+                        //reset
                         ewh.Reset();
                         task = null;
                         onComplete = null;

@@ -68,14 +68,14 @@
                     CPU.SetValues.Zero(AsFloatCPU(buffer));
                 }
             }
-            public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+            public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest, bool transA, bool transB) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.MatrixMult.Compute(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
+                    GPU.MatrixMult.Compute(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest), transA, transB);
                 }
                 else {
-                    CPU.MatrixMult.Compute(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
+                    CPU.MatrixMult.Compute(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest), transA, transB);
                 }
             }
             public static void Multiply(ITensorBuffer a, float val, ITensorBuffer dest) {

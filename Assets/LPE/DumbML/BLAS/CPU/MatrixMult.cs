@@ -9,14 +9,16 @@ namespace DumbML.BLAS.CPU {
 
         public static void Compute(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest,
                                    bool transposeL = false, bool transposeR = false) {
-            int numBatches = CheckShapes(l, r, dest, transposeL, transposeR);
+            var (numBatches, numBatchesL, numBatchesR) = CheckShapes(l, r, dest, transposeL, transposeR);
 
             // compute
             ComputeDelegateCache forward = forwardIterationPool.Get();
             forward.left = l;
             forward.right = r;
             forward.output = dest;
-            forward.maxBatches = numBatches;
+            forward.batchCount = numBatches;
+            forward.batchCountL = numBatchesL;
+            forward.batchCountR = numBatchesR;
             forward.transposeL = transposeL;
             forward.transposeR = transposeR;
             var cb = ThreadPool.ForWithCallback(0, numBatches, forward.CallForwardAction);
@@ -28,7 +30,7 @@ namespace DumbML.BLAS.CPU {
             forwardIterationPool.Return(forward);
         }
 
-        private static int CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
+        private static (int, int, int) CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
             int ldims = l.Rank();
             int rdims = r.Rank();
             int ddims = UnityEngine.Mathf.Max(ldims, rdims);
@@ -50,6 +52,8 @@ namespace DumbML.BLAS.CPU {
             // check leading dimensions
             // determine number of batches
             int numBatches = 1;
+            int numBatchesL = 1;
+            int numBatchesR = 1;
 
             // can't start from 0 because l and r might have different ranks (ie. 1 of them might have implicit leading dimensions)
             // instead we use distancce from end to get dimension
@@ -95,6 +99,8 @@ namespace DumbML.BLAS.CPU {
                 }
 
                 numBatches *= dimSize;
+                numBatchesL *= lsize;
+                numBatchesR *= rsize;
             }
 
             // check shape compatability
@@ -112,7 +118,7 @@ namespace DumbML.BLAS.CPU {
 
             }
 
-            return numBatches;
+            return (numBatches, numBatchesL, numBatchesR);
         }
 
 
@@ -125,7 +131,10 @@ namespace DumbML.BLAS.CPU {
             public FloatCPUTensorBuffer right;
             public FloatCPUTensorBuffer output;
 
-            public int maxBatches;
+            public int batchCount;
+            public int batchCountL;
+            public int batchCountR;
+
             public Action<int> CallForwardAction;
             public bool transposeL;
             public bool transposeR;
@@ -133,6 +142,7 @@ namespace DumbML.BLAS.CPU {
                 CallForwardAction = CallForward;
                 //CallBackwardsAction = CallBackwards;
             }
+           
             void CallForward(int i) {
                 // cache
                 int ldims = left.Rank();
@@ -153,7 +163,9 @@ namespace DumbML.BLAS.CPU {
                 int lind = 0;
                 int rind = 0;
                 int remaining = i;
-                int stride = maxBatches;
+                int stride = batchCount;
+                int strideL = batchCountL;
+                int strideR = batchCountR;
 
 
                 for (int j = ddims; j > 2; j--) {
@@ -166,6 +178,8 @@ namespace DumbML.BLAS.CPU {
                     int dsize = output.shape[dd];
 
                     stride /= dsize;
+                    strideL /= lsize;
+                    strideR /= rsize;
                     int ind = remaining / stride; // value at this index
                     remaining %= stride;
 
@@ -175,13 +189,12 @@ namespace DumbML.BLAS.CPU {
 
                     // if broadcast (ie. shape is 1), do not update ind
                     if (lsize != 1) {
-                        lind += ind * stride;
+                        lind += ind * strideL;
                     }
                     if (rsize != 1) {
-                        rind += ind * stride;
+                        rind += ind * strideR;
                     }
                 }
-
 
                 // get offsets
                 int loffset = lx * ly * lind;

@@ -6,7 +6,7 @@ namespace DumbML.BLAS.GPU {
     public static class MatrixMult {
         public static void Compute(FloatGPUTensorBuffer l, FloatGPUTensorBuffer r, FloatGPUTensorBuffer dest,
                                    bool transposeL = false, bool transposeR = false) {
-            var (mDim, innerDim, nDim) = CheckShapes(l, r, dest, transposeL, transposeR);
+            var (mDim, innerDim, nDim, batchCountL, batchCountR) = CheckShapes(l, r, dest, transposeL, transposeR);
 
             ComputeBuffer leftBuffer = l.buffer;
             ComputeBuffer rightBuffer = r.buffer;
@@ -26,6 +26,8 @@ namespace DumbML.BLAS.GPU {
             shader.SetInt("lrank", l.Rank());
             shader.SetInt("rrank", r.Rank());
             shader.SetInt("orank", dest.Rank());
+            shader.SetInt("batchCountL", batchCountL);
+            shader.SetInt("batchCountR", batchCountR);
             shader.SetBool("transposeL", transposeL);
             shader.SetBool("transposeR", transposeR);
 
@@ -41,7 +43,7 @@ namespace DumbML.BLAS.GPU {
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
 
-        private static (int, int, int) CheckShapes(FloatGPUTensorBuffer l, FloatGPUTensorBuffer r, FloatGPUTensorBuffer dest, bool tl, bool tr) {
+        private static (int, int, int, int, int) CheckShapes(FloatGPUTensorBuffer l, FloatGPUTensorBuffer r, FloatGPUTensorBuffer dest, bool tl, bool tr) {
             int ldims = l.Rank();
             int rdims = r.Rank();
             int ddims = Mathf.Max(ldims, rdims);
@@ -63,6 +65,8 @@ namespace DumbML.BLAS.GPU {
             // check leading dimensions
             // determine number of batches
             int numBatches = 1;
+            int numBatchesL = 1;
+            int numBatchesR = 1;
 
             // can't start from 0 because l and r might have different ranks (ie. 1 of them might have implicit leading dimensions)
             // instead we use distancce from end to get dimension
@@ -108,6 +112,8 @@ namespace DumbML.BLAS.GPU {
                 }
 
                 numBatches *= dimSize;
+                numBatchesL *= lsize;
+                numBatchesR *= rsize;
             }
 
             // check shape compatability
@@ -124,7 +130,7 @@ namespace DumbML.BLAS.GPU {
 
             }
 
-            return (lx, ly, ry);
+            return (lx, ly, ry, numBatchesL, numBatchesR);
         }
     }
 }
