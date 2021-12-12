@@ -65,7 +65,34 @@ namespace DumbML {
                 grad_b = gen_math_ops.mat_mul(grad, a, transpose_a=True, transpose_b=True)
             */
         }
+        public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
 
+            if (!transposeL && !transposeR) {
+                return new Operation[] {
+                    new MatrixMult(error, inputs[1], false, true),
+                    new MatrixMult(inputs[0], error, true, false)
+                };
+            }
+            else if (!transposeL && transposeR) {
+                return new Operation[] {
+                    new MatrixMult(error, inputs[1], false, false),
+                    new MatrixMult(error, inputs[0], true, false)
+                };
+            }
+            else if (transposeL && !transposeR) {
+                return new Operation[] {
+                    new MatrixMult(inputs[1], error, false, true),
+                    new MatrixMult(inputs[0], error, false, false)
+                };
+            }
+            else if (transposeL && transposeR) {
+                return new Operation[] {
+                    new MatrixMult(inputs[1], error, true, true),
+                    new MatrixMult(error, inputs[0], true, true)
+                };
+            }
+            return null;
+        }
 
         static int[] GetShape(int[] left, int[] right, bool transposeL = false, bool transposeR = false) {
             int ldims = left.Length;

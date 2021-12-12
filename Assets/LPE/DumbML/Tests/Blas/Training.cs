@@ -90,7 +90,7 @@ namespace Tests.DumbMLTests {
 
             FloatTensor outputTensor = new FloatTensor(mm.shape);
             FloatTensor lossTensor = new FloatTensor(loss.shape);
-            model.InitTraining(new SGD(), loss);
+            model.InitTraining(new SGD(momentum: 0), loss);
             StringBuilder sb = new StringBuilder();
              
             float prev = float.PositiveInfinity;
@@ -118,7 +118,7 @@ namespace Tests.DumbMLTests {
 
             void Run() {
                 model.Call(inputTensor, expectedTensor).ToTensors(outputTensor, lossTensor);
-                sb.Append($"Output: {outputTensor.data.ContentString()} Loss: {lossTensor.data.ContentString()}\n");
+                sb.Append($"Loss: {lossTensor.data.ContentString()}\n");
                 model.Backwards();
             }
         }

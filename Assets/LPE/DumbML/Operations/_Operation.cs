@@ -23,6 +23,9 @@ namespace DumbML {
         public abstract void Forward(ITensorBuffer[] inputs, ITensorBuffer result);
         public abstract void Backward(ITensorBuffer[] inputs, ITensorBuffer output, ITensorBuffer error, ITensorBuffer[] results);
 
+        public abstract Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error);
+
+
         public void SetName(string name) {
             this.name = name;
         }

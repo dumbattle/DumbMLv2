@@ -18,5 +18,11 @@
             BLAS.Engine.Compute.Copy(error, results[0]);
             BLAS.Engine.Compute.Multiply(error, -1, results[1]);
         }
+        public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
+            return new Operation[] {
+                error,
+                new Multiply(error, -1)
+            };
+        }
     }
 }

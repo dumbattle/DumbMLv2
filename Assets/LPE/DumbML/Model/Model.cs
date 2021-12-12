@@ -7,13 +7,14 @@ namespace DumbML {
     public class Model {
         ModelNode[] inputNodes;
         ModelNode[] outputNodes;
-        ModelNode[] lossNodes;
+        //ModelNode[] lossNodes;
         List<ModelNode> allNodes;
         IReadOnlyList<ITensorBuffer> outputBuffers;
 
         Gradients gradients;
         Optimizer optimizer;
 
+        Model backwardsModel;
         public Model(InputOp[] inputs, Operation[] outputs) {
             Dictionary<Operation, ModelNode> op2node = new Dictionary<Operation, ModelNode>();
             Stack<Operation> opStack = new Stack<Operation>();
@@ -35,7 +36,7 @@ namespace DumbML {
             for (int i = 0; i < outputs.Length; i++) {
                 outputNodes[i] = op2node[outputs[i]];
             }
-            
+
             for (int i = 0; i < inputs.Length; i++) {
                 inputNodes[i] = op2node[inputs[i]];
             }
@@ -64,9 +65,6 @@ namespace DumbML {
             }
         }
 
-
-
-
         public IReadOnlyList<ITensorBuffer> Call(params FloatTensor[] inputs) {
             if (inputs.Length != inputNodes.Length) {
                 throw new ArgumentException($"Worng number of inputs received\n  Expected: {inputNodes.Length}\n  Got: {inputs.Length}");
@@ -86,24 +84,57 @@ namespace DumbML {
         }
 
         public void Backwards() {
-            foreach (var n in allNodes) {
-                n.ClearError();
-            }
-
-            foreach (var n in lossNodes) {
-                BLAS.Engine.Compute.SetTo1s(n.errorBuffer);
-            }
-
+            var grads = backwardsModel.Call();
             optimizer.ZeroGrad();
-            for (int i = allNodes.Count - 1; i >= 0; i--) {
-                allNodes[i].Backwards(gradients);
+            for (int i = 0; i < grads.Count; i++) {
+                var g = grads[i];
+                var k = gradients.keys[i];
+                BLAS.Engine.Compute.Add(gradients[k], g, gradients[k]);
+
             }
             optimizer.Update();
+            //foreach (var n in allNodes) {
+            //    n.ClearError();
+            //}
+
+            //foreach (var n in lossNodes) {
+            //    BLAS.Engine.Compute.SetTo1s(n.errorBuffer);
+            //}
+
+            //optimizer.ZeroGrad();
+            //for (int i = allNodes.Count - 1; i >= 0; i--) {
+            //    allNodes[i].Backwards(gradients);
+            //}
+            //optimizer.Update();
         }
 
+        public void CreateBackwardsModel(Operation[] grads, Operation[] wrt) {
 
+            Dictionary<Operation, Operation> src = allNodes.ToDictionary(x => x.op, x => (Operation)new BufferOp(x.outputBuffer));
+            Dictionary<Operation, Operation> errors = allNodes.ToDictionary(x => x.op, x => (Operation)null);
 
+            foreach (var op in wrt) {
+                Operation seed = new Ones(op.shape);
+                errors[op] = seed;
+            }
 
+            for (int i = allNodes.Count - 1; i >= 0; i--) {
+                Operation op = allNodes[i].op;
+                Operation[] inputs = (from x in op.inner select src[x]).ToArray();
+
+                var inputGrads = op.BuildBackwards(inputs, src[op], errors[op]);
+
+                for (int j = 0; j < inputs.Length; j++) {
+                    var e = errors[op.inner[j]];
+                    var g = inputGrads[j];
+
+                    e = e == null ? g : new Add(e, g);
+                    errors[op.inner[j]] = e;
+                }
+            }
+            Operation[] outputOps = (from x in grads select errors[x]).ToArray();
+            backwardsModel = new Model(new InputOp[0], outputOps);
+        }
 
         public void InitTraining(Optimizer o, params Operation[] loss) {
             if (!o.IsBuilt) {
@@ -118,9 +149,10 @@ namespace DumbML {
             }
 
 
-            lossNodes = (from x in loss select (from y in allNodes where y.op == x select y).First()).ToArray();
+            //lossNodes = (from x in loss select (from y in allNodes where y.op == x select y).First()).ToArray();
             optimizer = o;
             gradients = o.grad;
+            CreateBackwardsModel(o.grad.keys, loss);
         }
 
         public void Dispose() {
@@ -136,6 +168,29 @@ namespace DumbML {
             allNodes = null;
             gradients = null;
             optimizer = null;
+        }
+
+        class BufferOp : Operation {
+            ITensorBuffer buffer; // not owner of this buffer, so no need to dispose
+
+            public BufferOp(ITensorBuffer buffer) {
+                this.buffer = buffer;
+                BuildOp(buffer.shape, buffer.dtype);
+            }
+
+            public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+                BLAS.Engine.Compute.Copy(buffer, result);
+            }
+            public override void Backward(ITensorBuffer[] inputs, ITensorBuffer output, ITensorBuffer error, ITensorBuffer[] results) {
+                return;
+            }
+            public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
+                return new Operation[] {
+                    new Multiply(error, inputs[1]),
+                    new Multiply(error, inputs[0])
+                };
+            }
+
         }
     }
 }

@@ -45,6 +45,31 @@ namespace Tests.DumbMLTests {
             m.Dispose();
         }
 
+
+
+
+        //[Test]
+        //public void BackwardsModel() {
+        //    Operation a = 3;
+        //    Operation x = 2;
+
+        //    Operation op = new Multiply(a, x);
+
+        //    Model m = new Model(new InputOp[0], new[] { op });
+        //    Model backwards = m.CreateBackwardsModel(new[] { x }, new[] { op });
+
+        //    FloatTensor t = new FloatTensor(1);
+
+        //    m.Call().ToTensors(t);
+        //    UnityEngine.Debug.Log(t[0]);
+
+        //    backwards.Call().ToTensors(t);
+        //    UnityEngine.Debug.Log(t[0]);
+            
+
+        //    m.Dispose();
+        //    backwards.Dispose();
+        //}
     }
 
 
