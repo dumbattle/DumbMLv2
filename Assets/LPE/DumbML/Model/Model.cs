@@ -162,7 +162,7 @@ namespace DumbML {
 
             gradients?.Dispose();
             optimizer?.Dispose();
-
+            backwardsModel?.Dispose();
             inputNodes = null;
             outputNodes = null;
             allNodes = null;
