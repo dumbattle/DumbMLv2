@@ -11,12 +11,9 @@ namespace DumbML {
 
         public T[] buffer;
 
-        int[] shapeConstraints;
-
 
         public CPUTensorBuffer(params int[] shape) {
             this.shape = new int[shape.Length];
-            shapeConstraints = (int[])shape.Clone();
 
             size = 1;
 
@@ -29,23 +26,9 @@ namespace DumbML {
             buffer = new T[size];
         }
         public void SetShape(int[] shape) {
-            // check valid shape
-            if (shape.Length != shapeConstraints.Length) {
-                throw new System.ArgumentException($"Desired shape ({shape.ContentString()}) is does not meet constraints ({this.shape.ContentString()})");
-            }
 
-            for (int i = 0; i < shape.Length; i++) {
-                int c = this.shape[i];
-                int s = shape[i];
-
-                if (s < 0) {
-
-                    throw new System.ArgumentException($"Invalid shape ({shape.ContentString()})");
-                }
-                if (c >= 0 && c != shape[i]) {
-                    throw new System.ArgumentException($"Desired shape ({shape.ContentString()}) is does not meet constraints ({this.shape.ContentString()})");
-                }
-
+            if (shape.Length > this.shape.Length) {
+                this.shape = new int[shape.Length];
             }
 
             // set shape and size
@@ -61,7 +44,6 @@ namespace DumbML {
             }
 
         }
-
 
         public void CopyFrom<U>(Tensor<U> src) {
             if (src is Tensor<T> t) {
@@ -105,7 +87,6 @@ namespace DumbML {
             shape = null;
             size = -1;
             buffer = null;
-            shapeConstraints = null;
         }
     }
 }

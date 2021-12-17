@@ -1,0 +1,49 @@
+#pragma kernel Transpose
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> output;
+
+uint4 ishape[16];
+uint4 istrides[16];
+uint4 perm[16];
+
+uint count;
+uint rank;
+
+uint GetIShape(uint ind) {
+    return ishape[ind / 4][ind % 4];
+}
+uint GetIStride(uint ind) {
+    return istrides[ind / 4][ind % 4];
+}
+uint GetPerm(uint ind) {
+    return perm[ind / 4][ind % 4];
+}
+
+
+[numthreads(64, 1, 1)]
+void Transpose(uint3 id : SV_DispatchThreadID) {
+    if (id.x > count) {
+        return;
+    }
+
+    uint stride = count;
+    uint remaining = id.x;
+    uint offset = 0;
+
+    for (uint axis = 0; axis < rank; axis++) {
+        uint dimSize = GetIShape(GetPerm(axis));
+        stride /= dimSize;
+
+        uint indCount = remaining / stride;
+        remaining = remaining % stride;
+
+        offset += indCount * GetIStride(GetPerm(axis));
+    }
+
+    
+    output[id.x] = input[offset];
+}
+
+

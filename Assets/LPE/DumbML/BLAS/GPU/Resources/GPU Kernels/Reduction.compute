@@ -1,0 +1,97 @@
+#pragma kernel Sum
+
+
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> output;
+int count;
+
+int4 ishape[16];
+int4 raxis[16];
+
+int irank;
+int rrank;
+int isize;
+int osize;
+
+
+
+uint GetIShape(uint ind) {
+    return ishape[ind / 4][ind % 4];
+}
+uint GetRAxis(uint ind) {
+    return raxis[ind / 4][ind % 4];
+}
+bool IsReductionAxis(uint a) {
+    for (int i = 0; i < rrank; i++) {
+        if (GetRAxis(i) == a) {
+            return true;
+        }
+    }
+    return false;
+}
+uint ReductionOffset(int i) {
+
+}
+
+
+[numthreads(64, 1, 1)]
+void Sum(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+
+    // determine output index
+    // determine input offset
+    // determine reduction index
+
+    uint srcStart = 0;
+    uint outputIndex = 0;
+    uint rIndex = 0;
+
+    uint rsize = (uint)isize / (uint)osize; // number of input elements per output element
+
+    uint istride = isize;
+    uint ostride = osize;
+    uint rstride = rsize;
+
+    uint index = id.x;
+
+    for (uint a = 0; a < (uint)irank; a++) {
+        uint dimSize = GetIShape(a);
+        istride /= dimSize;
+
+
+        uint count = index / istride;
+
+
+        bool isReducedAxis = IsReductionAxis(a);
+
+
+        if (!isReducedAxis) {
+            ostride /= dimSize;
+            outputIndex += count * ostride;
+            srcStart += count * istride;
+        }
+        else {
+            rstride /= dimSize;
+            rIndex += count * rstride;
+        }
+
+
+        index = index % istride;
+    }
+
+
+
+    // perform reduction
+
+    // we have:
+    //   srcStart
+    //   outputIndex
+    //   rIndex
+    //   rsize
+    // use these to do reduction
+
+}

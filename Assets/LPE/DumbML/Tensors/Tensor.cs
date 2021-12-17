@@ -1,4 +1,7 @@
-﻿namespace DumbML {
+﻿using System.Collections.Generic;
+
+
+namespace DumbML {
     public abstract class Tensor<T> {
         #region Indexers
         public T this[params int[] index] {
@@ -74,7 +77,7 @@
         public int size => data.Length;
 
         public Tensor(params int[] shape) {
-            this.shape = (int[])shape.Clone();
+            this.shape =(int[])shape.Clone();
 
             int size = 1;
 

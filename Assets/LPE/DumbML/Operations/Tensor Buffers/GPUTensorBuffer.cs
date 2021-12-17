@@ -10,12 +10,10 @@ namespace DumbML {
 
         public ComputeBuffer buffer;
 
-        int[] shapeConstraints;
 
 
         public GPUTensorBuffer(params int[] shape) {
             this.shape = new int[shape.Length];
-            shapeConstraints = (int[])shape.Clone();
 
             size = 1;
 
@@ -31,24 +29,10 @@ namespace DumbML {
 
 
         public void SetShape(int[] shape) {
-            // check valid shape
-            if (shape.Length != shapeConstraints.Length) {
-                throw new System.ArgumentException($"Desired shape ({shape.ContentString()}) is does not meet constraints ({this.shape.ContentString()})");
+            if (shape.Length > this.shape.Length) {
+                this.shape = new int[shape.Length];
             }
 
-            for (int i = 0; i < shape.Length; i++) {
-                int c = this.shape[i];
-                int s = shape[i];
-
-                if (s < 0) {
-
-                    throw new System.ArgumentException($"Invalid shape ({shape.ContentString()})");
-                }
-                if (c >= 0 && c != shape[i]) {
-                    throw new System.ArgumentException($"Desired shape ({shape.ContentString()}) is does not meet constraints ({this.shape.ContentString()})");
-                }
-
-            }
 
             // set shape and size
             size = 1;
@@ -64,6 +48,20 @@ namespace DumbML {
             }
         }
 
+
+        /// <summary>
+        /// for some ops, it is neccessary to use a larger buffer than necessary in order to make computations easier
+        /// </summary>
+        public bool SetMinSize(int size) {
+            if (size <= this.size) {
+                return false;
+            }
+
+
+            buffer.Dispose();
+            buffer = CreateNewBuffer(size);
+            return true;
+        }
         public void CopyFrom<T>(Tensor<T> src) {
             if (src.dtype != dtype) {
                 throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {src.dtype}\nDest: {dtype}");
@@ -90,7 +88,6 @@ namespace DumbML {
             shape = null;
             size = -1;
             buffer = null;
-            shapeConstraints = null;
         }
 
     }

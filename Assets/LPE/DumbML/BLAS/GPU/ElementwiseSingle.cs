@@ -2,8 +2,8 @@
 
 namespace DumbML.BLAS.GPU {
     public static class ElementwiseSingle {
-        static void Call(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, string kernelName) {
-            if (!input.shape.CompareContents(output.shape)) {
+        static void Call(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, string kernelName, bool ignoreShape = false) {
+            if (!ignoreShape && !input.shape.CompareContents(output.shape)) {
                 throw new System.ArgumentException($"Input and output tensors do not have same shape: {input.shape.ContentString()} vs {output.shape.ContentString()}");
             }
             ComputeShader shader = Kernels.elementWiseSingle;
@@ -25,8 +25,8 @@ namespace DumbML.BLAS.GPU {
         public static void Abs(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output) {
             Call(input, output, "Abs");
         }
-        public static void Copy(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output) {
-            Call(input, output, "Copy");
+        public static void Copy(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, bool ignoreShape = false) {
+            Call(input, output, "Copy", ignoreShape);
         }
         public static void Exp(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output) {
             Call(input, output, "Exp");

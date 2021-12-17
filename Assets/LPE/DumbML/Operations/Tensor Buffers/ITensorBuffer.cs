@@ -1,4 +1,6 @@
-﻿namespace DumbML {
+﻿using System.Collections.Generic;
+
+namespace DumbML {
 
     public interface ITensorBuffer : System.IDisposable {
         int[] shape { get; }

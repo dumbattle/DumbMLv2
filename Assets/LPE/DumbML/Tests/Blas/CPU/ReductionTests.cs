@@ -99,5 +99,6 @@ namespace Tests.BLAS.CPU {
 
             Run(a, reduction, e);
         }
+    
     }
 }

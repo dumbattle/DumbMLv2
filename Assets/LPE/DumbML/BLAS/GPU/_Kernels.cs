@@ -14,8 +14,14 @@ namespace DumbML.BLAS.GPU {
         public static ComputeShader matrixMult => _matrixMult = _matrixMult ?? Resources.Load<ComputeShader>("GPU Kernels/Matrix Mult");
         static ComputeShader _matrixMult;
 
+        public static ComputeShader reduction => _reduction = _reduction ?? Resources.Load<ComputeShader>("GPU Kernels/Reduction");
+        static ComputeShader _reduction;
+
         public static ComputeShader setValues => _setValues = _setValues ?? Resources.Load<ComputeShader>("GPU Kernels/Set Value");
         static ComputeShader _setValues;
+
+        public static ComputeShader transpose => _transpose = _transpose ?? Resources.Load<ComputeShader>("GPU Kernels/Transpose");
+        static ComputeShader _transpose;
 
     }
 }
