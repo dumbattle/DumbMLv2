@@ -3,7 +3,7 @@
 namespace DumbML.BLAS.GPU {
     public static class Reduction {
         public static void Sum(FloatGPUTensorBuffer input, int[] axis, FloatGPUTensorBuffer output) {
-            output.SetMinSize(input.size);
+            output.ExpandBuffer(input.size);
             Transpose(input, axis, output);
 
             ComputeShader shader = Kernels.reduction;

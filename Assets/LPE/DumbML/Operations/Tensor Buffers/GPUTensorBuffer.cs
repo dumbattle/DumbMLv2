@@ -52,16 +52,17 @@ namespace DumbML {
         /// <summary>
         /// for some ops, it is neccessary to use a larger buffer than necessary in order to make computations easier
         /// </summary>
-        public bool SetMinSize(int size) {
+        public bool ExpandBuffer(int size) {
             if (size <= this.size) {
                 return false;
             }
-
 
             buffer.Dispose();
             buffer = CreateNewBuffer(size);
             return true;
         }
+
+
         public void CopyFrom<T>(Tensor<T> src) {
             if (src.dtype != dtype) {
                 throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {src.dtype}\nDest: {dtype}");

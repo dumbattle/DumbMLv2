@@ -28,43 +28,6 @@ namespace DumbML {
         }
 
 
-        public override void Backward(ITensorBuffer[] inputs, ITensorBuffer output, ITensorBuffer error, ITensorBuffer[] results) {
-            if (!transposeL && !transposeR) {
-                BLAS.Engine.Compute.MatrixMult(error, inputs[1], results[0], false, true);
-                BLAS.Engine.Compute.MatrixMult(inputs[0], error, results[1], true, false);
-            }
-            else if (!transposeL && transposeR) {
-                BLAS.Engine.Compute.MatrixMult(error, inputs[1], results[0], false, false);
-                BLAS.Engine.Compute.MatrixMult(error, inputs[0], results[1], true, false);
-            }
-            else if (transposeL && !transposeR) {
-                BLAS.Engine.Compute.MatrixMult(inputs[1], error, results[0], false, true);
-                BLAS.Engine.Compute.MatrixMult(inputs[0], error, results[1], false, false);
-            }
-            else if (transposeL && transposeR) {
-                BLAS.Engine.Compute.MatrixMult(inputs[1], error, results[0], true, true);
-                BLAS.Engine.Compute.MatrixMult(error, inputs[0], results[1], true, true);
-            }
-            /*
-             tensorflow implementation
-              t_a = op.get_attr("transpose_a")
-              t_b = op.get_attr("transpose_b")
-              a = math_ops.conj(op.inputs[0])
-              b = math_ops.conj(op.inputs[1])
-              if not t_a and not t_b:
-                grad_a = gen_math_ops.mat_mul(grad, b, transpose_b=True)
-                grad_b = gen_math_ops.mat_mul(a, grad, transpose_a=True)
-              elif not t_a and t_b:
-                grad_a = gen_math_ops.mat_mul(grad, b)
-                grad_b = gen_math_ops.mat_mul(grad, a, transpose_a=True)
-              elif t_a and not t_b:
-                grad_a = gen_math_ops.mat_mul(b, grad, transpose_b=True)
-                grad_b = gen_math_ops.mat_mul(a, grad)
-              elif t_a and t_b:
-                grad_a = gen_math_ops.mat_mul(b, grad, transpose_a=True, transpose_b=True)
-                grad_b = gen_math_ops.mat_mul(grad, a, transpose_a=True, transpose_b=True)
-            */
-        }
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
 
             if (!transposeL && !transposeR) {

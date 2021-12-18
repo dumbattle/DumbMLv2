@@ -13,11 +13,7 @@
             BLAS.Engine.Compute.Add(inputs[0], inputs[1], result);
         }
 
-
-        public override void Backward(ITensorBuffer[] inputs, ITensorBuffer output, ITensorBuffer error, ITensorBuffer[] results) {
-            BLAS.Engine.Compute.Copy(error, results[0]);
-            BLAS.Engine.Compute.Copy(error, results[1]);
-        }
+   
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
             return new Operation[] {
                 error,
@@ -25,4 +21,5 @@
             };
         }
     }
+
 }
