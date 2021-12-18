@@ -7,7 +7,7 @@ namespace DumbML {
         public IntGPUTensorBuffer(params int[] shape) : base(shape) { }
 
         protected override ComputeBuffer CreateNewBuffer(int count) {
-            return new ComputeBuffer(size, sizeof(int));
+            return new ComputeBuffer(count, sizeof(int));
         }
     }
 }

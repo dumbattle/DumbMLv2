@@ -11,19 +11,16 @@ namespace Tests.BLAS {
             void Run(Array src, int[] axis, Array expected) {
                 FloatTensor at = FloatTensor.FromArray(src);
                 FloatTensor et = FloatTensor.FromArray(expected);
-                //FloatTensor ot = new FloatTensor(et.shape); 
-                FloatTensor ot = new FloatTensor(at.shape);
+                FloatTensor ot = new FloatTensor(et.shape);
 
                 FloatGPUTensorBuffer input = new FloatGPUTensorBuffer(at.shape);
-                //FloatGPUTensorBuffer output = new FloatGPUTensorBuffer(et.shape);
-                FloatGPUTensorBuffer output = new FloatGPUTensorBuffer(at.shape);
+                FloatGPUTensorBuffer output = new FloatGPUTensorBuffer(et.shape);
 
                 input.CopyFrom(at);
                 DumbML.BLAS.GPU.Reduction.Sum(input, axis, output);
                 output.CopyTo(ot);
 
-                //CollectionAssert.AreEqual(et.data, ot.data);
-
+                CollectionAssert.AreEqual(et.data, ot.data);
                 input.Dispose();
                 output.Dispose();
             }

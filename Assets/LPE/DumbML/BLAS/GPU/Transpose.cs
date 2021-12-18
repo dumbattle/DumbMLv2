@@ -6,18 +6,14 @@ namespace DumbML.BLAS.GPU {
             ComputeShader shader = Kernels.transpose;
             int kernelID = shader.FindKernel("Transpose");
 
-
             shader.SetBuffer(kernelID, "input", input.buffer);
             shader.SetBuffer(kernelID, "output", output.buffer);
-
-
 
             shader.SetInt("count", input.size);
             shader.SetInt("rank", input.Rank());
             shader.SetInts("ishape", input.shape);
             shader.SetInts("perm", perm);
             shader.SetInts("istrides", GetStrides(input.shape));
-
 
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = input.size + (int)numThreads - 1;
@@ -36,7 +32,6 @@ namespace DumbML.BLAS.GPU {
                 stride *= dimSize;
             }
             return result;
-
         }
     }
 
