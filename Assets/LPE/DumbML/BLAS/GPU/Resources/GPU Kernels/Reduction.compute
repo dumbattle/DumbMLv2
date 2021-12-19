@@ -1,8 +1,5 @@
 #pragma kernel Sum
 
-
-
-
 RWStructuredBuffer<float> buffer;
 uint count;
 
@@ -35,10 +32,4 @@ void Sum(uint3 id : SV_DispatchThreadID) {
             break;
         }
     }
-
-    // - 5
-    // 3 2 
-    // 2 1
-    // 1 1
-
 }

@@ -48,14 +48,14 @@
                     CPU.ElementwiseBinary.Add(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
-            public static void Copy(ITensorBuffer src, ITensorBuffer dest) {
+            public static void Copy(ITensorBuffer src, ITensorBuffer dest, bool ignoreShape = false) {
                 Device deviceType = AssertSameDeviceType(src, dest);
 
                 if (deviceType == Device.gpu) {
-                    GPU.ElementwiseSingle.Copy(AsFloatGPU(src), AsFloatGPU(dest));
+                    GPU.ElementwiseSingle.Copy(AsFloatGPU(src), AsFloatGPU(dest), ignoreShape);
                 }
                 else {
-                    CPU.ElementWiseSingle.Copy(AsFloatCPU(src), AsFloatCPU(dest));
+                    CPU.ElementWiseSingle.Copy(AsFloatCPU(src), AsFloatCPU(dest), ignoreShape);
                 }
             }
             public static void Clear(ITensorBuffer buffer) {
@@ -98,6 +98,17 @@
                     CPU.ElementwiseBinary.Multiply(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
+            public static void ReduceSum(ITensorBuffer buffer, int[] axis, ITensorBuffer dest) {
+                Device d = buffer.device;
+
+                if (d == Device.gpu) {
+                    GPU.Reduction.Sum(AsFloatGPU(buffer), axis, AsFloatGPU(dest));
+                }
+                else {
+                    CPU.Reduction.Sum(AsFloatCPU(buffer), axis, AsFloatCPU(dest));
+                }
+            }
+            
             public static void SetTo1s(ITensorBuffer buffer) {
                 Device d = buffer.device;
 

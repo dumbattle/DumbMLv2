@@ -4,14 +4,17 @@ namespace DumbML.BLAS.GPU {
     public static class Reduction {
         public static void Sum(FloatGPUTensorBuffer input, int[] axis, FloatGPUTensorBuffer output) {
             output.ExpandBuffer(input.size);
-            Transpose(input, axis, output);
-
+            if (axis != null) {
+                Transpose(input, axis, output);
+            }
+            else {
+                ElementwiseSingle.Copy(input, output, true);
+            }
             ComputeShader shader = Kernels.reduction;
 
 
             int kernelID = shader.FindKernel("Sum");
             shader.SetBuffer(kernelID, Shader.PropertyToID("buffer"), output.buffer);
-
             shader.SetInt(Shader.PropertyToID("count"), input.size);
             shader.SetInt(Shader.PropertyToID("rstride"), output.size);
             shader.SetInt(Shader.PropertyToID("rcount"), input.size / output.size);

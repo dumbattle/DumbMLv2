@@ -5,6 +5,8 @@ namespace DumbML {
     public class MatrixMult : Operation {
         bool transposeL;
         bool transposeR;
+        int[] shapeActual;
+
         public MatrixMult(Operation l, Operation r, bool transposeL = false, bool transposeR = false) {
             int aRank = l.shape.Length;
             int bRank = r.shape.Length;
@@ -13,23 +15,22 @@ namespace DumbML {
 
             // Compatible matrix shapes
             if (l.shape[transposeL ? aRank - 2 : aRank - 1] != r.shape[transposeR ? bRank - 1 : bRank - 2]) {
-                throw new System.ArgumentException($"Cannot MatrixMult tensors of shapes: {l.shape.ContentString()} by {r.shape.ContentString()}");
+                throw new ArgumentException($"Cannot MatrixMult tensors of shapes: {l.shape.ContentString()} by {r.shape.ContentString()}");
             }
 
 
-            int[] shape = GetShape(l.shape, r.shape, transposeL, transposeR);
+            shapeActual = GetShape(l.shape, r.shape, shapeActual, transposeL, transposeR);
 
-            BuildOp(shape, DType.Float, l, r);
+            BuildOp(shapeActual, DType.Float, l, r);
         }
 
-
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+            shapeActual = GetShape(inputs[0].shape, inputs[1].shape, shapeActual, transposeL, transposeR);
+            result.SetShape(shapeActual);
             BLAS.Engine.Compute.MatrixMult(inputs[0], inputs[1], result, transposeL, transposeR);
         }
 
-
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-
             if (!transposeL && !transposeR) {
                 return new Operation[] {
                     new MatrixMult(error, inputs[1], false, true),
@@ -57,18 +58,21 @@ namespace DumbML {
             return null;
         }
 
-        static int[] GetShape(int[] left, int[] right, bool transposeL = false, bool transposeR = false) {
+        static int[] GetShape(int[] left, int[] right, int[] result = null, bool transposeL = false, bool transposeR = false) {
             int ldims = left.Length;
             int rdims = right.Length;
             int ddims = Mathf.Max(ldims, rdims);
 
-            int[] result = new int[ddims];
+             result = result ?? new int[ddims];
             // check ranks > 2
             if (ldims < 2) {
                 throw new ArgumentException($"MatrixMult requires tensors to have dimension of at least 2. Got shape: {left.ContentString()}");
             }
             if (rdims < 2) {
                 throw new ArgumentException($"MatrixMult requires tensors to have dimension of at least 2. Got shape: {right.ContentString()}");
+            }
+            if (result.Length != ddims) {
+                throw new ArgumentException($"MM");
             }
 
 

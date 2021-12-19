@@ -72,6 +72,7 @@ namespace DumbML {
 
             // set input nodes
             for (int i = 0; i < inputs.Length; i++) {
+                inputNodes[i].outputBuffer.SetShape(inputs[i].shape);
                 inputNodes[i].outputBuffer.CopyFrom(inputs[i]);
             }
 
@@ -82,7 +83,7 @@ namespace DumbML {
 
             return outputBuffers;
         }
-
+      
         public void Backwards() {
             var grads = backwardsModel.Call();
             optimizer.ZeroGrad();
@@ -127,7 +128,9 @@ namespace DumbML {
                 for (int j = 0; j < inputs.Length; j++) {
                     var e = errors[op.inner[j]];
                     var g = inputGrads[j];
-
+                    if(g == null) {
+                        continue;
+                    }
                     e = e == null ? g : new Add(e, g);
                     errors[op.inner[j]] = e;
                 }
@@ -179,11 +182,10 @@ namespace DumbML {
             }
 
             public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+                result.SetShape(buffer.shape);
                 BLAS.Engine.Compute.Copy(buffer, result);
             }
-            public override void Backward(ITensorBuffer[] inputs, ITensorBuffer output, ITensorBuffer error, ITensorBuffer[] results) {
-                return;
-            }
+        
             public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
                 return new Operation[] {
                     new Multiply(error, inputs[1]),

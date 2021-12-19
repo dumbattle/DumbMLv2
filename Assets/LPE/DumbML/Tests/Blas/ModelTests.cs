@@ -71,6 +71,15 @@ namespace Tests.DumbMLTests {
         //    backwards.Dispose();
         //}
     }
+    public class OpUtilTests {
+        [Test] 
+        public void BroadCast() {
+            int[] a = { -1, 24 };
+            int[] b = { 1 };
 
+            var r = OpUtility.GetBroadcastShape(a, b, null);
+            CollectionAssert.AreEqual(r, new int[] { -1, 24});
+        }
+    }
 
 }
