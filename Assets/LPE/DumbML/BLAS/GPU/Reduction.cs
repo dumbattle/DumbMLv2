@@ -4,14 +4,17 @@ namespace DumbML.BLAS.GPU {
     public static class Reduction {
         public static void Sum(FloatGPUTensorBuffer input, int[] axis, FloatGPUTensorBuffer output) {
             output.ExpandBuffer(input.size);
-            if (axis != null) {
-                Transpose(input, axis, output);
-            }
-            else {
-                ElementwiseSingle.Copy(input, output, true);
-            }
-            ComputeShader shader = Kernels.reduction;
 
+            //if (axis != null) {
+                Transpose(input, axis, output);
+            //}
+            //else {
+            //    // this doesn't work????
+            //    // ElementwiseSingle uses length of output
+            //    ElementwiseSingle.Copy(input, output, true);
+            //}
+
+            ComputeShader shader = Kernels.reduction;
 
             int kernelID = shader.FindKernel("Sum");
             shader.SetBuffer(kernelID, Shader.PropertyToID("buffer"), output.buffer);
@@ -19,20 +22,12 @@ namespace DumbML.BLAS.GPU {
             shader.SetInt(Shader.PropertyToID("rstride"), output.size);
             shader.SetInt(Shader.PropertyToID("rcount"), input.size / output.size);
 
-
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = input.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
-
         }
 
-
         static void Transpose(FloatGPUTensorBuffer input, int[] raxis, FloatGPUTensorBuffer output) {
-            // transpose input to [{reduced axis}, {non-reduced axis}]
-            //     keep order of non-reduced axis the same
-            //     this way no need to transpose back into correct shape
-
-
             ComputeShader shader = Kernels.transpose;
             int kernelID = shader.FindKernel("Transpose");
 
@@ -56,10 +51,10 @@ namespace DumbML.BLAS.GPU {
                 int[] result = Utils.intArr;
 
                 int a = 0;
-                int b = raxis.Length;
+                int b = raxis?.Length ?? -1;
 
                 for (int i = 0; i < input.Rank(); i++) {
-                    if (raxis.Contains(i)) {
+                    if (raxis == null || raxis.Contains(i)) {
                         result[a] = i;
                         a++;
                     }

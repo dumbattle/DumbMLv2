@@ -5,9 +5,7 @@ using System.Collections.Generic;
 
 namespace DumbML.BLAS.CPU {
     public static partial class Reduction {
-
-    
-        static class Reduce<T> where T: Reducer, new() {
+        static class Reduce<T> where T : Reducer, new() {
             static ObjectPool<ReduceDelegate<T>> pool = new ObjectPool<ReduceDelegate<T>>(() => new ReduceDelegate<T>());
 
             public static void Compute(FloatCPUTensorBuffer src, int[] axis, FloatCPUTensorBuffer dest) {
@@ -26,7 +24,7 @@ namespace DumbML.BLAS.CPU {
 
                 pool.Return(forward);
             }
-        
+
         }
 
         class ReduceDelegate<T> where T : Reducer, new() {

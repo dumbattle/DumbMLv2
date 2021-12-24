@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DumbML {
@@ -20,7 +21,9 @@ namespace DumbML {
 
 
             shapeActual = GetShape(l.shape, r.shape, shapeActual, transposeL, transposeR);
-
+            if (shapeActual == null) {
+                Debug.Log("???????????????????????????");
+            }
             BuildOp(shapeActual, DType.Float, l, r);
         }
 
@@ -31,33 +34,62 @@ namespace DumbML {
         }
 
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
+            Operation agrad = null;
+            Operation bgrad = null;
+
             if (!transposeL && !transposeR) {
-                return new Operation[] {
-                    new MatrixMult(error, inputs[1], false, true),
-                    new MatrixMult(inputs[0], error, true, false)
-                };
+                agrad =  new MatrixMult(error, inputs[1], false, true);
+                bgrad = new MatrixMult(inputs[0], error, true, false);
             }
             else if (!transposeL && transposeR) {
-                return new Operation[] {
-                    new MatrixMult(error, inputs[1], false, false),
-                    new MatrixMult(error, inputs[0], true, false)
-                };
+                agrad = new MatrixMult(error, inputs[1], false, false);
+                bgrad = new MatrixMult(error, inputs[0], true, false);
             }
             else if (transposeL && !transposeR) {
-                return new Operation[] {
-                    new MatrixMult(inputs[1], error, false, true),
-                    new MatrixMult(inputs[0], error, false, false)
-                };
+                agrad = new MatrixMult(inputs[1], error, false, true);
+                bgrad = new MatrixMult(inputs[0], error, false, false);
             }
             else if (transposeL && transposeR) {
-                return new Operation[] {
-                    new MatrixMult(inputs[1], error, true, true),
-                    new MatrixMult(error, inputs[0], true, true)
-                };
+                agrad = new MatrixMult(inputs[1], error, true, true);
+                bgrad = new MatrixMult(error, inputs[0], true, true);
             }
-            return null;
-        }
+            var (a, b) = GetGradientReduction(inputs[0].shape, inputs[1].shape, error.shape);
 
+            return new Operation[] { 
+                a.Length > 0 ? new Reshape(new ReduceSum(agrad, inputs[0]), inputs[0]) : agrad,
+                b.Length > 0 ? new Reshape(new ReduceSum(bgrad, inputs[1]), inputs[1]) : bgrad
+            };
+        }
+        static (int[], int[]) GetGradientReduction(int[] ashape, int[] bshape, int[] eshape) {
+            List<int> a = new List<int>();
+            List<int> b = new List<int>();
+
+
+
+            for (int i = eshape.Length; i > 2; i--) {
+                int adim = ashape.Length - i;
+                int bdim = bshape.Length - i;
+                int edim = eshape.Length - i;
+
+                if (adim < 0) {
+                    a.Add(edim);
+                }
+                else if (bdim < 0) {
+                    b.Add(edim);
+                }
+                else if (eshape[edim] != 1) {
+                    if (ashape[adim] == 1) {
+                        a.Add(edim);
+                    }
+                    else if (bshape[bdim] == 1) {
+                        b.Add(edim);
+                    }
+                }
+            }
+
+
+            return (a.ToArray(), b.ToArray());
+        }
         static int[] GetShape(int[] left, int[] right, int[] result = null, bool transposeL = false, bool transposeR = false) {
             int ldims = left.Length;
             int rdims = right.Length;
@@ -106,8 +138,9 @@ namespace DumbML {
                 }
 
                 // not compatable
-                if (dimSize == -1) {
-                    return null;
+                else {
+                    throw new InvalidOperationException($"Tensors do not have compatible dimensions: {left.ContentString()}, {right.ContentString()}");
+
                 }
                 result[di] = dimSize;
             }

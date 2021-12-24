@@ -6,6 +6,7 @@ namespace DumbML {
     public abstract class CPUTensorBuffer<T> : ITensorBuffer {
         public int[] shape { get; private set; }
         public int size { get; private set; }
+        public int capacity => buffer.Length;
         public Device device => Device.cpu;
         public abstract DType dtype { get; }
 

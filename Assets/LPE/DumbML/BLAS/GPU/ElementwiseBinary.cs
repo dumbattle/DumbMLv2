@@ -121,7 +121,7 @@ namespace DumbML.BLAS.GPU {
             int ddims = UnityEngine.Mathf.Max(ldims, rdims);
 
             if (ddims != d.Length) {
-                throw new InvalidOperationException($"Output Tensors do not have correcct rank\n  Expected{ddims}\n  Got:{d.ContentString()}");
+                throw new InvalidOperationException($"Output Tensors do not have correcct rank\n  Expected: {ddims}\n  Got:{d.ContentString()}");
             }
 
             int strideSize = 1;

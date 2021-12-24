@@ -12,7 +12,7 @@ namespace DumbML.BLAS.GPU {
             int kernelID = shader.FindKernel(kernelName);
             shader.SetBuffer(kernelID, Shader.PropertyToID("input"), inputBuffer);
             shader.SetBuffer(kernelID, Shader.PropertyToID("output"), outputBuffer);
-            shader.SetInt(Shader.PropertyToID("count"), output.size);
+            shader.SetInt(Shader.PropertyToID("count"), input.size);
 
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = input.size + (int)numThreads - 1;

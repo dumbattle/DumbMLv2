@@ -52,13 +52,13 @@ namespace DumbML {
             List<int> result = new List<int>();
 
             for (int i = errShape.Length; i > 0; i--) {
-                int rdim = inputShape.Length - i;
+                int idim = inputShape.Length - i;
                 int edim = errShape.Length - i;
 
-                if (rdim < 0) {
+                if (idim < 0) {
                     result.Add(edim);
                 }
-                else if (errShape[edim] != 1 && inputShape[rdim] == 1) {
+                else if (errShape[edim] != 1 && inputShape[idim] == 1) {
                     result.Add(edim);
                 }
             }

@@ -21,10 +21,11 @@ namespace DumbML {
             List<int> a = OpUtility.BroadcastBackwardsReductionShape(inputs[0].shape, error.shape);
             List<int> b = OpUtility.BroadcastBackwardsReductionShape(inputs[1].shape, error.shape);
 
-            var bgrad = b.Count > 0 ? new Reshape(new ReduceSum(error, b.ToArray()), inputs[1]) : error;
+            var agrad = a.Count > 0 ? new Reshape(new ReduceSum(error, inputs[0]), inputs[0]) : error;
+            var bgrad = b.Count > 0 ? new Reshape(new ReduceSum(error, inputs[1]), inputs[1]) : error;
 
             return new Operation[] {
-                a.Count > 0 ? new Reshape(new ReduceSum(error, a.ToArray()), inputs[0]) : error,
+                agrad,
                 new Multiply(bgrad, -1)
             };
         }

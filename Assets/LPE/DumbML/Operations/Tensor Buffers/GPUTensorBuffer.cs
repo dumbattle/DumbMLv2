@@ -4,6 +4,7 @@ namespace DumbML {
     public abstract class GPUTensorBuffer : ITensorBuffer {
         public int[] shape { get; private set; }
         public int size { get; private set; }
+        public int capacity => buffer.count;
         public Device device => Device.gpu;
         public abstract DType dtype { get; }
 

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+
 
 namespace DumbML {
     public class Add : Operation {
@@ -17,14 +19,13 @@ namespace DumbML {
         }
    
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-            shapeActual = OpUtility.GetBroadcastShape(inputs[0].shape, inputs[1].shape, shapeActual);
             List<int> a = OpUtility.BroadcastBackwardsReductionShape(inputs[0].shape, error.shape);
             List<int> b = OpUtility.BroadcastBackwardsReductionShape(inputs[1].shape, error.shape);
 
 
             return new Operation[] {
-                a.Count > 0 ? new Reshape(new ReduceSum(error, a.ToArray()), inputs[0]) : error,
-                b.Count > 0 ? new Reshape(new ReduceSum(error, b.ToArray()), inputs[1]) : error
+                a.Count > 0 ? new Reshape(new ReduceSum(error, inputs[0]), inputs[0]) : error,
+                b.Count > 0 ? new Reshape(new ReduceSum(error, inputs[1]), inputs[1]) : error
             };
         }
     }

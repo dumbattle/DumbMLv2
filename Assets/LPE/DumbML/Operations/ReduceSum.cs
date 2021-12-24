@@ -1,23 +1,21 @@
-﻿namespace DumbML {
+﻿using System.Collections.Generic;
+
+
+namespace DumbML {
     public class ReduceSum : Operation {
         int[] axis;
 
         public ReduceSum(Operation op, params int[] axis) {
             if (axis == null) {
                 BuildOp(new int[] { 1 }, op.dtype, op);
-
             }
             else {
-
                 this.axis = (int[])axis.Clone();
-                int size = op.shape.Length - axis.Length;
-                if (size == 0) {
-                    size = 1;
-                }
-                int[] shape = new int[size];
 
+                // determine output shape
+                List<int> shapeList = new List<int>();
 
-                int ind = 0;
+                // add non-reduced dimensions
                 for (int i = 0; i < op.shape.Length; i++) {
                     bool isReduced = false;
                     foreach (var a in axis) {
@@ -27,27 +25,69 @@
                         }
                     }
                     if (!isReduced) {
-                        shape[ind] = op.shape[i];
-                        ind++;
+                        shapeList.Add(op.shape[i]);
                     }
                 }
 
-                if (size == 0) {
-                    shape[0] = 1;
+                // if all dimensions are reduced, set shape to [1]
+                if (shapeList.Count == 0) {
+                    shapeList.Add(1);
                 }
 
-                BuildOp(shape, op.dtype, op);
+                BuildOp(shapeList.ToArray(), op.dtype, op);
             }
         }
 
+        /// <summary>
+        /// output shape may not be exactly correct, reshaping may be necessary
+        /// </summary>
+        public ReduceSum(Operation op, Operation matchShape) {
+            BuildOp(matchShape.shape, op.dtype, op, matchShape);
+            axis = new int[op.shape.Length];
+        }
+
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+            if (inputs.Length == 2) {
+                GetReductionAxis(inputs[0].shape, inputs[1].shape, axis);
+            }
+
             BLAS.Engine.Compute.ReduceSum(inputs[0], axis, result);
         }
 
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
+            // not implemented yet
+            // requires a broadcast op
+
+            //reshape to get correct Rank
+            // broadcast
             return new Operation[] {
                null
            };
+        }
+
+        static void GetReductionAxis(int[] shape, int[] target, int[] result) {
+            // clear results
+            for (int i = 0; i < result.Length; i++) {
+                result[i] = shape.Length;
+            }
+
+            for (int i = shape.Length; i > 0; i--) {
+                int si = shape.Length - i;
+                int ti = target.Length - i;
+
+                if (ti < 0) {
+                    result[si] = si;
+                    continue;
+                }
+
+                int sdim = shape[si];
+                int tdim = target[ti];
+
+                if (tdim == 1 && sdim > 1) {
+                    result[si] = si;
+                    continue;
+                }
+            }
         }
     }
 }

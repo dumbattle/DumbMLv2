@@ -139,6 +139,17 @@
                     CPU.ElementwiseBinary.Subtract(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
+        
+            public static void Transpose(ITensorBuffer buffer, int[] perm, ITensorBuffer dest) {
+                Device d = buffer.device;
+
+                if (d == Device.gpu) {
+                    GPU.Transpose.Compute(AsFloatGPU(buffer), perm, AsFloatGPU(dest));
+                }
+                else {
+                    CPU.Transpose.Compute(AsFloatCPU(buffer), perm, AsFloatCPU(dest));
+                }
+            }
         }
     }
 

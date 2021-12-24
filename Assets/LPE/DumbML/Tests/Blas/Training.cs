@@ -19,7 +19,7 @@ namespace Tests.DumbMLTests {
 
             var op = new Add(input, b);
             var loss = Loss.MSE(op, truth);
-            var l2 = new ReduceSum(loss, null);
+            var l2 = new ReduceSum(loss, (int[])null);
             Model m = new Model(new InputOp[] { input, truth }, new Operation[] { op, loss, l2 });
             FloatTensor outputTensor = new FloatTensor(2, 1);
             FloatTensor lossTensor = new FloatTensor(2, 1);
@@ -65,12 +65,12 @@ namespace Tests.DumbMLTests {
 
         [Test]
         public void MatrixMult() {
-            int[] leftShape = { 4, 5 };
+            int[] leftShape = { -1, 4, 5 };
             int[] rightShape = { 5, 6 };
-            int[] outShape = { 4, 6 };
-
-            FloatTensor inputTensor = new FloatTensor(leftShape);
-            FloatTensor expectedTensor = new FloatTensor(outShape);
+            int[] outShape = { -1, 4, 6 };
+            int batchCount = 1;
+            FloatTensor inputTensor = new FloatTensor(batchCount, 4, 5);
+            FloatTensor expectedTensor = new FloatTensor(batchCount, 4, 6);
 
             for (int i = 0; i < inputTensor.size; i++) {
                 inputTensor.data[i] = Random.value;
@@ -81,18 +81,18 @@ namespace Tests.DumbMLTests {
 
             var inputOp = new InputOp(leftShape);
             var weight = new Variable(rightShape);
-            var expectedOp = new InputOp(outShape);
             var mm = new MatrixMult(inputOp, weight);
 
+            var expectedOp = new InputOp(outShape);
             var loss = Loss.MSE(mm, expectedOp);
-            var l2 = new ReduceSum(loss, null);
+            var l2 = new ReduceSum(loss, (int[])null);
 
-            weight.InitValue(() => Random.Range(-1f, 1f));
+            weight.InitValue(() => Random.Range(-.1f, .1f));
 
 
             Model model = new Model(new[] { inputOp, expectedOp }, new Operation[] { mm, loss, l2 });
 
-            FloatTensor outputTensor = new FloatTensor(mm.shape);
+            FloatTensor outputTensor = new FloatTensor(batchCount, 4, 6);
             FloatTensor lossTensor = new FloatTensor(1);
             model.InitTraining(new SGD(), loss);
             StringBuilder sb = new StringBuilder();
