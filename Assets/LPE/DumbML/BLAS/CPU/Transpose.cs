@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LPE;
 
 
@@ -7,52 +8,64 @@ namespace DumbML.BLAS.CPU {
         static ComputeDelegate cd = new ComputeDelegate();
 
         public static void Compute(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest) {
-            if (!ShapeUtility.SameShape(src.shape, dest.shape)) {
-                throw new ArgumentException("Buffers are not the same shape");
+            // TODO - check shape
+
+            Compute(src.buffer, src.shape, perm, dest.buffer);
+        }
+        public static void Compute(float[] src, int[] shape, int[] perm, float[] dest) {
+            var shapeList = Utils.GetIntList();
+            shapeList.Clear();
+            shapeList.AddRange(shape);
+            Compute(src, shapeList, perm, dest);
+            Utils.Return(shapeList);
+        }
+        public static void Compute(float[] src, List<int> shape, int[] perm, float[] dest) {
+            int inputSize = 1;
+            foreach (var i in shape) {
+                inputSize *= i;
             }
 
-            Compute(src, perm, dest);
-        }
-        public static void Compute_IgnoreShape(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest) {
-            if (dest.capacity < src.size) {
+            if (inputSize < src.Length) {
                 throw new ArgumentException("Destination buffer is not large enough");
             }
 
             int minThreadSize = 100;
 
-            int threadCount = src.size / minThreadSize;
+            int threadCount = inputSize / minThreadSize;
+            int[] strides = Utils.GetIntArr();
+            GetStrides(shape, strides);
+
             if (threadCount <= 1) {
-                cd.Init(src, perm, dest, 1, GetStrides(src.shape));
+                cd.Init(src, shape, perm, dest, 1, strides);
                 cd.CallForwardAction(0);
             }
             else {
-                cd.Init(src, perm, dest, 1, GetStrides(src.shape));
+                cd.Init(src, shape, perm, dest, 1, strides);
                 var cb = ThreadPool.ForWithCallback(0, threadCount, cd.CallForwardAction);
                 cb.Wait();
             }
+            Utils.Return(strides);
         }
 
-        static int[] GetStrides(int[] shape) {
-            int[] result = Utils.intArr;
-
+        static void GetStrides(List<int> shape, int[] result) {
             int stride = 1;
 
-            for (int i = shape.Length - 1; i >= 0; i--) {
+            for (int i = shape.Count - 1; i >= 0; i--) {
                 result[i] = stride;
 
                 int dimSize = shape[i];
                 stride *= dimSize;
             }
-
-            return result;
         }
 
         class ComputeDelegate {
             public Action<int> CallForwardAction;
 
-            FloatCPUTensorBuffer src;
-            int[] perm; 
-            FloatCPUTensorBuffer dest;
+            float[] src;
+            List<int> shape;
+            int size;
+            int[] perm;
+            float[] dest;
             int threadCount;
             int[] strides;
 
@@ -60,25 +73,31 @@ namespace DumbML.BLAS.CPU {
                 CallForwardAction = CallForward;
             }
 
-            public void Init(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest, int threadCount, int[] strides) {
+            public void Init(float[] src, List<int> shape, int[] perm, float[] dest, int threadCount, int[] strides) {
                 this.src = src;
+                this.shape = shape;
                 this.perm = perm;
                 this.dest = dest;
                 this.threadCount = threadCount;
                 this.strides = strides;
+
+                size = 1;
+                foreach (var s in shape) {
+                    size *= s;
+                }
             }
 
             void CallForward(int t) {
-                int start = src.size * t / threadCount;
-                int end = src.size * (t + 1) / threadCount;
+                int start = size * t / threadCount;
+                int end = size * (t + 1) / threadCount;
 
                 for (int i = start; i < end; i++) {
-                    int stride = src.size;
+                    int stride = size;
                     int remaining = i;
                     int offset = 0;
 
-                    for (int axis = 0; axis < perm.Length; axis++) {
-                        int dimSize = src.shape[perm[axis]];
+                    for (int axis = 0; axis < shape.Count; axis++) {
+                        int dimSize = shape[perm[axis]];
                         stride /= dimSize;
 
                         int indCount = remaining / stride;
@@ -87,10 +106,16 @@ namespace DumbML.BLAS.CPU {
                         offset += indCount * strides[perm[axis]];
                     }
 
-                    dest.buffer[i] = src.buffer[offset];
+                    dest[i] = src[offset];
                 }
             }
         }
-
     }
+
+    public static class Broadcast {
+        public static void Compute(FloatCPUTensorBuffer input, int[] shape, FloatCPUTensorBuffer dest) {
+      
+        }
+    }
+
 }

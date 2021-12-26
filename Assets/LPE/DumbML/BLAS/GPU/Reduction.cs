@@ -28,6 +28,11 @@ namespace DumbML.BLAS.GPU {
         }
 
         static void Transpose(FloatGPUTensorBuffer input, int[] raxis, FloatGPUTensorBuffer output) {
+            var perm = Utils.GetIntArr();
+            var strides = Utils.GetIntArr();
+            GetPerm(perm);
+            GetStrides(input.shape, strides);
+
             ComputeShader shader = Kernels.transpose;
             int kernelID = shader.FindKernel("Transpose");
 
@@ -38,18 +43,18 @@ namespace DumbML.BLAS.GPU {
             shader.SetInt("count", input.size);
             shader.SetInt("rank", input.Rank());
             shader.SetInts("ishape", input.shape);
-            shader.SetInts("perm", GetPerm());
-            shader.SetInts("istrides", GetStrides(input.shape));
+            shader.SetInts("perm", perm);
+            shader.SetInts("istrides", strides);
 
 
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = input.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
 
-           
-            int[] GetPerm() {
-                int[] result = Utils.intArr;
+            Utils.Return(perm);
+            Utils.Return(strides);
 
+            void GetPerm(int[] result) {
                 int a = 0;
                 int b = raxis?.Length ?? -1;
 
@@ -64,11 +69,9 @@ namespace DumbML.BLAS.GPU {
                     }
                 }
 
-                return result;
             }
 
-            int[] GetStrides(int[] shape) {
-                int[] result = Utils.intArr;
+            void GetStrides(int[] shape, int[] result) {
 
                 int stride = 1;
                 for (int i = shape.Length - 1; i >= 0; i--) {
@@ -78,10 +81,9 @@ namespace DumbML.BLAS.GPU {
                     int dimSize = shape[i];
                     stride *= dimSize;
                 }
-                return result;
             }
-
         }
+
         static bool Contains(this int[] arr, int val) {
             foreach (var i in arr) {
                 if (i == val) {
