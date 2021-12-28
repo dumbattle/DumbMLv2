@@ -2,6 +2,7 @@
 
 namespace DumbML.BLAS {
     public static partial class Engine {
+        public const int MAX_DIMENSION = 64;
         public static bool GPUEnabled;
         static Device device => GPUEnabled ? Device.gpu : Device.cpu;
 

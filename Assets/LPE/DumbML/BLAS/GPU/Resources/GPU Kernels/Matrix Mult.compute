@@ -5,7 +5,7 @@ RWStructuredBuffer<float> left;
 RWStructuredBuffer<float> right;
 RWStructuredBuffer<float> output;
 
-// int[] doesn't work (each element must a multiple of 16), we have workaround
+// int[] doesn't work (each element must a multiple of 16 bytes), we have workaround
 int4 lshape[16]; 
 int4 rshape[16];
 int4 oshape[16];

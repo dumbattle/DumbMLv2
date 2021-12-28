@@ -5,18 +5,16 @@
         }
 
 
-        class SumReducer : Reducer {
+        struct SumReducer : ReductionJob.IImplementation {
             float result;
 
-            public override void Reset() {
-                result = 0;
+            public void Next(float v) {
+                result += v;
             }
-            public override void Update(float val) {
-                result += val;
-            }
-            public override float Complete() {
+            public float Complete() {
                 return result;
             }
+
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using Unity.Jobs;
+
 
 namespace DumbML.BLAS.CPU {
     public static class ElementWiseSingle {
@@ -6,20 +8,29 @@ namespace DumbML.BLAS.CPU {
             if (!ignoreShape && !ShapeUtility.SameShape(input.shape, dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }
-
-            for (int i = 0; i < input.size; i++) {
-                dest.buffer[i] = input.buffer[i];
-            }
+            var j = new ElementWiseSingleJobs.Copy(input, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+            j.result.CopyTo(dest.buffer);
+            j.Dispose();
+            //for (int i = 0; i < input.size; i++) {
+            //    dest.buffer[i] = input.buffer[i];
+            //}
         }
         public static void Sqr(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest) {
             if (!ShapeUtility.SameShape(input.shape, dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }
 
-            for (int i = 0; i < input.size; i++) {
-                var x = input.buffer[i];
-                dest.buffer[i] = x * x;
-            }
+            var j = new ElementWiseSingleJobs.Sqr(input, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+            j.result.CopyTo(dest.buffer);
+            j.Dispose();
+            //for (int i = 0; i < input.size; i++) {
+            //    var x = input.buffer[i];
+            //    dest.buffer[i] = x * x;
+            //}
         }
     }
 }

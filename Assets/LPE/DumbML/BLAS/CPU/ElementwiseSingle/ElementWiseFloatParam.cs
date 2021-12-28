@@ -1,4 +1,6 @@
 ﻿using System;
+using Unity.Jobs;
+
 
 namespace DumbML.BLAS.CPU {
     public static class ElementWiseFloatParam {
@@ -6,10 +8,16 @@ namespace DumbML.BLAS.CPU {
             if (!input.shape.CompareContents(dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }
+            var j = new ElementwiseFloatParamJobs.Add(input, val, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+            j.result.CopyTo(dest.buffer); // TODO - remove
 
-            for (int i = 0; i < input.size; i++) {
-                dest.buffer[i] = input.buffer[i] + val;
-            }
+            j.Dispose();
+
+            //for (int i = 0; i < input.size; i++) {
+            //    dest.buffer[i] = input.buffer[i] + val;
+            //}
         }
         public static void Subtract(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest, float val) {
             Add(input, dest, -val);
@@ -19,9 +27,21 @@ namespace DumbML.BLAS.CPU {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
             }
 
-            for (int i = 0; i < input.size; i++) {
-                dest.buffer[i] = input.buffer[i] * val;
-            }
+            var j = new ElementwiseFloatParamJobs.Multiply(input, val, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+            j.result.CopyTo(dest.buffer); // TODO - remove
+
+            j.Dispose();
+            //for (int i = 0; i < input.size; i++) {
+            //    dest.buffer[i] = input.buffer[i] * val;
+            //}
         }
+
+
+
+
+       
+
     }
 }

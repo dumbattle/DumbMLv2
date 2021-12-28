@@ -1,5 +1,7 @@
 ﻿using LPE;
 using System;
+using Unity.Jobs;
+using Unity.Collections;
 
 namespace DumbML.BLAS.CPU {
     public static class MatrixMult {
@@ -242,5 +244,44 @@ namespace DumbML.BLAS.CPU {
             }
         }
 
+    }
+
+
+
+    public struct MatrixMultJob : IJobParallelFor {
+        public NativeArray<float> result;
+     
+        NativeArray<float> left;
+        NativeArray<float> right;
+
+        NativeArray<int> lshape;
+        NativeArray<int> rshape;
+        NativeArray<int> dshape;
+
+        int lrank;
+        int rrank;
+        int drank;
+
+        int mDim;
+        int innerDim;
+        int nDim;
+        int batchCountL;
+        int batchCountR;
+
+        bool transposeL;
+        bool transposeR;
+
+        public void Execute(int index) {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose() {
+            result.Dispose();
+            left.Dispose();
+            right.Dispose();
+            lshape.Dispose();
+            rshape.Dispose();
+            dshape.Dispose();
+        }
     }
 }
