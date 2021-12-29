@@ -6,10 +6,8 @@ using Unity.Jobs;
 namespace DumbML.BLAS.CPU {
     public static partial class ElementwiseBinary {
         static class Computation<T> where T : struct, ElementwiseBinaryJob.IImplementation {
-            public static void Forward(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output) {
+            public static void Forward(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output, ElementwiseBinaryJob.Job<T> j) {
                 CheckShape(a.shape, b.shape, output.shape);
-
-                ElementwiseBinaryJob.Job<T> j = new ElementwiseBinaryJob.Job<T>(a, b, output);
 
                 var h = j.Schedule(output.size, 1);
                 h.Complete();

@@ -6,7 +6,7 @@ namespace DumbML.BLAS.CPU {
     public static class MatrixMult {
         public static void Compute(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest,
                                    bool transposeL = false, bool transposeR = false) {
-            var (numBatches, numBatchesL, numBatchesR) = CheckShapes(l, r, dest, transposeL, transposeR);
+            var (numBatchesL, numBatchesR) = CheckShapes(l, r, dest, transposeL, transposeR);
 
             var j = new MatrixMultJob(l, r, dest, transposeL, transposeR, numBatchesL, numBatchesR);
 
@@ -16,7 +16,7 @@ namespace DumbML.BLAS.CPU {
             j.Dispose();
         }
 
-        private static (int, int, int) CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
+        private static (int, int) CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
             int ldims = l.Rank();
             int rdims = r.Rank();
             int ddims = UnityEngine.Mathf.Max(ldims, rdims);
@@ -37,7 +37,6 @@ namespace DumbML.BLAS.CPU {
 
             // check leading dimensions
             // determine number of batches
-            int numBatches = 1;
             int numBatchesL = 1;
             int numBatchesR = 1;
 
@@ -84,7 +83,6 @@ namespace DumbML.BLAS.CPU {
 
                 }
 
-                numBatches *= dimSize;
                 numBatchesL *= lsize;
                 numBatchesR *= rsize;
             }
@@ -104,7 +102,7 @@ namespace DumbML.BLAS.CPU {
 
             }
 
-            return (numBatches, numBatchesL, numBatchesR);
+            return (numBatchesL, numBatchesR);
         }
     }
 }

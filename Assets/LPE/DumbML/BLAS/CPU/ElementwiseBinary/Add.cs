@@ -3,7 +3,7 @@
 namespace DumbML.BLAS.CPU {
     public static partial class ElementwiseBinary {
         public static void Add(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output) {
-            Computation<_Add>.Forward(a, b, output);
+            Computation<_Add>.Forward(a, b, output, new ElementwiseBinaryJob.Job<_Add>());
         }
 
         struct _Add : ElementwiseBinaryJob.IImplementation {

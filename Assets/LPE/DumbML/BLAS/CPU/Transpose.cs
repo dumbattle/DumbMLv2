@@ -1,121 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
 using LPE;
+using Unity.Jobs;
+using Unity.Collections;
 
 
 namespace DumbML.BLAS.CPU {
     public static class Transpose {
-        static ComputeDelegate cd = new ComputeDelegate();
-
         public static void Compute(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest) {
             // TODO - check shape
 
-            Compute(src.buffer, src.shape, perm, dest.buffer);
-        }
-        public static void Compute(float[] src, int[] shape, int[] perm, float[] dest) {
-            var shapeList = Utils.GetIntList();
-            shapeList.Clear();
-            shapeList.AddRange(shape);
-            Compute(src, shapeList, perm, dest);
-            Utils.Return(shapeList);
-        }
-        public static void Compute(float[] src, List<int> shape, int[] perm, float[] dest) {
-            int inputSize = 1;
-            foreach (var i in shape) {
-                inputSize *= i;
-            }
-
-            if (inputSize < src.Length) {
-                throw new ArgumentException("Destination buffer is not large enough");
-            }
-
-            int minThreadSize = 100;
-
-            int threadCount = inputSize / minThreadSize;
             int[] strides = Utils.GetIntArr();
-            GetStrides(shape, strides);
+            GetStrides(src.shape, strides);
 
-            if (threadCount <= 1) {
-                cd.Init(src, shape, perm, dest, 1, strides);
-                cd.CallForwardAction(0);
-            }
-            else {
-                cd.Init(src, shape, perm, dest, 1, strides);
-                var cb = ThreadPool.ForWithCallback(0, threadCount, cd.CallForwardAction);
-                cb.Wait();
-            }
+
+            var j = new TransposeJob(src, perm, dest, strides);
+            var h = j.Schedule(src.size, 1);
+            h.Complete();
+
+            j.result.CopyTo(dest.buffer);
+            j.Dispose();
             Utils.Return(strides);
         }
-
-        static void GetStrides(List<int> shape, int[] result) {
+        static void GetStrides(int[] shape, int[] result) {
             int stride = 1;
 
-            for (int i = shape.Count - 1; i >= 0; i--) {
+            for (int i = shape.Length - 1; i >= 0; i--) {
                 result[i] = stride;
 
                 int dimSize = shape[i];
                 stride *= dimSize;
             }
         }
-
-        class ComputeDelegate {
-            public Action<int> CallForwardAction;
-
-            float[] src;
-            List<int> shape;
-            int size;
-            int[] perm;
-            float[] dest;
-            int threadCount;
-            int[] strides;
-
-            public ComputeDelegate() {
-                CallForwardAction = CallForward;
-            }
-
-            public void Init(float[] src, List<int> shape, int[] perm, float[] dest, int threadCount, int[] strides) {
-                this.src = src;
-                this.shape = shape;
-                this.perm = perm;
-                this.dest = dest;
-                this.threadCount = threadCount;
-                this.strides = strides;
-
-                size = 1;
-                foreach (var s in shape) {
-                    size *= s;
-                }
-            }
-
-            void CallForward(int t) {
-                int start = size * t / threadCount;
-                int end = size * (t + 1) / threadCount;
-
-                for (int i = start; i < end; i++) {
-                    int stride = size;
-                    int remaining = i;
-                    int offset = 0;
-
-                    for (int axis = 0; axis < shape.Count; axis++) {
-                        int dimSize = shape[perm[axis]];
-                        stride /= dimSize;
-
-                        int indCount = remaining / stride;
-                        remaining = remaining % stride;
-
-                        offset += indCount * strides[perm[axis]];
-                    }
-
-                    dest[i] = src[offset];
-                }
-            }
-        }
     }
 
-    public static class Broadcast {
-        public static void Compute(FloatCPUTensorBuffer input, int[] shape, FloatCPUTensorBuffer dest) {
-      
+    public struct TransposeJob : IJobParallelFor {
+        public NativeArray<float> result;
+
+        [ReadOnly]
+        NativeArray<float> src;
+        [ReadOnly]
+        NativeArray<int> srcShape;
+        [ReadOnly]
+        NativeArray<int> perm;
+        [ReadOnly]
+        NativeArray<int> strides;
+
+        int size;
+        int rank;
+
+        public TransposeJob(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest, int[] strides) {
+            this.src = new NativeArray<float>(src.buffer, Allocator.TempJob);
+            result = new NativeArray<float>(dest.buffer, Allocator.TempJob);
+
+            srcShape = new NativeArray<int>(src.shape, Allocator.TempJob);
+            this.perm = new NativeArray<int>(perm, Allocator.TempJob);
+            this.strides = new NativeArray<int>(strides, Allocator.TempJob);
+
+            size = src.size;
+            rank = src.Rank();
+        }
+
+
+        public void Execute(int i) {
+            int stride = size;
+            int remaining = i;
+            int offset = 0;
+
+            for (int axis = 0; axis < rank; axis++) {
+                int dimSize = srcShape[perm[axis]];
+                stride /= dimSize;
+
+                int indCount = remaining / stride;
+                remaining = remaining % stride;
+
+                offset += indCount * strides[perm[axis]];
+            }
+
+            result[i] = src[offset];
+        }
+
+        public void Dispose() {
+            result.Dispose();
+            src.Dispose();
+            srcShape.Dispose();
+            perm.Dispose();
+            strides.Dispose();
         }
     }
-
 }
