@@ -8,7 +8,7 @@ namespace DumbML.BLAS.CPU {
         static class Computation<T> where T : struct, ElementwiseBinaryJob.IImplementation {
             public static void Forward(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output, ElementwiseBinaryJob.Job<T> j) {
                 CheckShape(a.shape, b.shape, output.shape);
-
+                j.Init(a, b, output);
                 var h = j.Schedule(output.size, 1);
                 h.Complete();
                 j.ov.CopyTo(output.buffer); // TODO - remove

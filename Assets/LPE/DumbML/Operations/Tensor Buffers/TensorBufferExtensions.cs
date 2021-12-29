@@ -1,4 +1,6 @@
-﻿namespace DumbML {
+﻿using UnityEngine.Rendering;
+
+namespace DumbML {
     public static class TensorBufferExtensions {
         public static int Rank(this ITensorBuffer b) {
             return b.shape.Length;
@@ -15,7 +17,9 @@
 
         public static void CopyFrom(this FloatCPUTensorBuffer dest, FloatGPUTensorBuffer src) {
             dest.SetShape(src.shape);
-            src.buffer.GetData(dest.buffer);
+            var r = AsyncGPUReadback.RequestIntoNativeArray(ref dest.buffer,  src.buffer);
+            r.WaitForCompletion();
+            //src.buffer.GetData(dest.buffer.ar);
         }
         public static void CopyTo(this FloatCPUTensorBuffer src, FloatGPUTensorBuffer dest) {
             dest.CopyFrom(src);

@@ -21,10 +21,15 @@ namespace Tests.BLAS {
 
                 GPUCall(inputGPU, outputGPU, param);
                 outputGPU.CopyTo(outputGPU2CPU);
-                var outputCPU = CPPUOp(inputCPU, param);
-                CollectionAssert.AreEqual(outputCPU.buffer, outputGPU2CPU.buffer);
+                FloatCPUTensorBuffer outputCPU = CPPUOp(inputCPU, param);
+                CollectionAssert.AreEquivalent(outputCPU.buffer, outputGPU2CPU.buffer);
+
                 inputGPU.Dispose();
                 outputGPU.Dispose();
+
+                inputCPU.Dispose();
+                outputGPU2CPU.Dispose();
+                outputCPU.Dispose();
             }
 
             [Test]

@@ -19,7 +19,10 @@ namespace Tests.BLAS.CPU {
             FloatCPUTensorBuffer r = new FloatCPUTensorBuffer(a.shape);
 
             DumbML.BLAS.CPU.ElementWiseFloatParam.Add(a, r, b);
-            CollectionAssert.AreEqual(e.buffer, r.buffer);
+            CollectionAssert.AreEquivalent(e.buffer, r.buffer);
+            a.Dispose();
+            e.Dispose();
+            r.Dispose();
         }
     }
 }

@@ -16,12 +16,17 @@ namespace Tests.BLAS.CPU {
 
             ab.CopyFrom(a);
             bb.CopyFrom(b);
-
-
-            DumbML.BLAS.CPU.MatrixMult.Compute(ab, bb, ob, tl, tr);
-            ob.CopyTo(o);
-
-            CollectionAssert.AreEqual(e.data, o.data);
+       
+            try {
+                DumbML.BLAS.CPU.MatrixMult.Compute(ab, bb, ob, tl, tr);
+                ob.CopyTo(o);
+                CollectionAssert.AreEqual(e.data, o.data);
+            }
+            finally {
+                ab.Dispose();
+                bb.Dispose();
+                ob.Dispose();
+            }
         }
 
 

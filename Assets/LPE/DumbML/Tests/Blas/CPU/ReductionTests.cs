@@ -14,6 +14,9 @@ namespace Tests.BLAS.CPU {
             input.CopyFrom(at);
             DumbML.BLAS.CPU.Reduction.Sum(input, axis, output);
             CollectionAssert.AreEqual(et.data, output.buffer);
+
+            input.Dispose();
+            output.Dispose();   
         }
         [Test]
         public void Sum1() {

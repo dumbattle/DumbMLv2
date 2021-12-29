@@ -16,6 +16,8 @@ namespace Tests.BLAS.CPU {
             foreach (var v in tb.buffer) {
                 Assert.AreEqual(v, val);
             }
+
+            tb.Dispose();
         }
         [Test]
         public void One() {

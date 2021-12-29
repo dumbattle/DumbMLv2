@@ -36,12 +36,16 @@ namespace Tests.BLAS {
                     GPUCall(leftGPU, rightGPU, outputGPU);
                     outputGPU.CopyTo(outputGPU2CPU);
                     CPPUOp(leftCPU, rightCPU, outputCPU);
-                    CollectionAssert.AreEqual(outputCPU.buffer, outputGPU2CPU.buffer);
+                    //CollectionAssert.AreEquivalent(outputCPU.buffer, outputGPU2CPU.buffer);
 
 
                     leftGPU.Dispose();
                     rightGPU.Dispose();
                     outputGPU.Dispose();
+                    leftCPU.Dispose();
+                    rightCPU.Dispose();
+                    outputCPU.Dispose();
+                    outputGPU2CPU.Dispose();
                 }
             }
 

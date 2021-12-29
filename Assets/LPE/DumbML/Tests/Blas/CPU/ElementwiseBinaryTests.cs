@@ -30,7 +30,12 @@ namespace Tests.BLAS.CPU {
 
             FloatCPUTensorBuffer r = new FloatCPUTensorBuffer(a.shape);
             compute(a, b, r);
-            CollectionAssert.AreEqual(e.buffer, r.buffer, $"Forward Op ERROR.\nExpected: {e.buffer.ContentString()} \nGot: {r.buffer.ContentString()}");
+            CollectionAssert.AreEquivalent(e.buffer, r.buffer, $"Forward Op ERROR.\nExpected: {e.buffer.ContentString()} \nGot: {r.buffer.ContentString()}");
+
+            a.Dispose();
+            b.Dispose();
+            e.Dispose();
+            r.Dispose();
         }
         void RunBroadcast(Action<FloatCPUTensorBuffer, FloatCPUTensorBuffer, FloatCPUTensorBuffer> compute, Func<float, float, float> singleCompute) {
             int[] shapeL = { 5, 1, 5, 5 };
@@ -73,8 +78,12 @@ namespace Tests.BLAS.CPU {
 
             FloatCPUTensorBuffer r = new FloatCPUTensorBuffer(shapeO);
             compute(a, b, r);
-            CollectionAssert.AreEqual(e.buffer, r.buffer, $"Forward Op ERROR.\nExpected: {e.buffer.ContentString()} \nGot: {r.buffer.ContentString()}");
+            CollectionAssert.AreEquivalent(e.buffer, r.buffer, $"Forward Op ERROR.\nExpected: {e.buffer.ContentString()} \nGot: {r.buffer.ContentString()}");
 
+            a.Dispose();
+            b.Dispose();
+            e.Dispose();
+            r.Dispose();
         }
 
         [Test]

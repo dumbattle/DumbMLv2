@@ -1,16 +1,17 @@
 ﻿using UnityEngine;
 using System;
+using Unity.Collections;
 
 
 namespace DumbML {
-    public abstract class CPUTensorBuffer<T> : ITensorBuffer {
+    public abstract class CPUTensorBuffer<T> : ITensorBuffer where T : struct {
         public int[] shape { get; private set; }
         public int size { get; private set; }
         public int capacity => buffer.Length;
         public Device device => Device.cpu;
         public abstract DType dtype { get; }
 
-        public T[] buffer;
+        public NativeArray<T> buffer;
 
 
         public CPUTensorBuffer(params int[] shape) {
@@ -24,7 +25,7 @@ namespace DumbML {
                 size *= s;
             }
 
-            buffer = new T[size];
+            buffer = new NativeArray<T>(size, Allocator.Persistent); 
         }
         public void SetShape(int[] shape) {
 
@@ -41,7 +42,8 @@ namespace DumbML {
 
             // resize buffer if neccessary
             if (size > buffer.Length) {
-                buffer = new T[size];
+                buffer.Dispose();
+                buffer = new NativeArray<T>(size, Allocator.Persistent); 
             }
 
         }
@@ -84,10 +86,9 @@ namespace DumbML {
 
         public void Dispose() {
             // set all values to invalid values to discourage use after disposing
-            buffer = null;
+            buffer.Dispose();
             shape = null;
             size = -1;
-            buffer = null;
         }
     }
 }
