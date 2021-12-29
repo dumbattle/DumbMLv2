@@ -11,13 +11,6 @@ namespace DumbML.BLAS.CPU {
             var j = new ElementwiseFloatParamJobs.Add(input, val, dest);
             var h = j.Schedule(input.size, 64);
             h.Complete();
-            j.result.CopyTo(dest.buffer); // TODO - remove
-
-            j.Dispose();
-
-            //for (int i = 0; i < input.size; i++) {
-            //    dest.buffer[i] = input.buffer[i] + val;
-            //}
         }
         public static void Subtract(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest, float val) {
             Add(input, dest, -val);
@@ -30,12 +23,6 @@ namespace DumbML.BLAS.CPU {
             var j = new ElementwiseFloatParamJobs.Multiply(input, val, dest);
             var h = j.Schedule(input.size, 64);
             h.Complete();
-            j.result.CopyTo(dest.buffer); // TODO - remove
-
-            j.Dispose();
-            //for (int i = 0; i < input.size; i++) {
-            //    dest.buffer[i] = input.buffer[i] * val;
-            //}
         }
 
 

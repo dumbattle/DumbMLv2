@@ -12,7 +12,6 @@ namespace DumbML.BLAS.CPU {
 
             var h = j.Schedule(dest.size, 1);
             h.Complete();
-            j.result.CopyTo(dest.buffer);
             j.Dispose();
         }
 

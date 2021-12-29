@@ -28,8 +28,8 @@ namespace DumbML.BLAS.CPU {
             int destSize;
 
             public Job(FloatCPUTensorBuffer src, int[] axis, FloatCPUTensorBuffer dest) {
-                this.src = new NativeArray<float>(src.buffer, Allocator.TempJob);
-                result = new NativeArray<float>(dest.buffer, Allocator.TempJob);
+                this.src = src.buffer;
+                result = dest.buffer;
 
                 this.axis = new NativeArray<int>(axis, Allocator.TempJob);
                 srcShape = new NativeArray<int>(src.shape, Allocator.TempJob);
@@ -99,8 +99,6 @@ namespace DumbML.BLAS.CPU {
             }
 
             public void Dispose() {
-                result.Dispose();
-                src.Dispose();
                 axis.Dispose();
                 srcShape.Dispose();
                 destShape.Dispose();

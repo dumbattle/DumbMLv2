@@ -30,9 +30,9 @@ namespace DumbML.BLAS.CPU {
 
         public MatrixMultJob(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest,
                                    bool transposeL, bool transposeR, int bcl, int bcr) {
-            left = new NativeArray<float>(l.buffer, Allocator.TempJob);
-            right = new NativeArray<float>(r.buffer, Allocator.TempJob);
-            result = new NativeArray<float>(dest.buffer, Allocator.TempJob);
+            left = l.buffer;
+            right = r.buffer;
+            result = dest.buffer;
 
             lshape = new NativeArray<int>(l.shape, Allocator.TempJob);
             rshape = new NativeArray<int>(r.shape, Allocator.TempJob);
@@ -128,9 +128,6 @@ namespace DumbML.BLAS.CPU {
         }
 
         public void Dispose() {
-            result.Dispose();
-            left.Dispose();
-            right.Dispose();
             lshape.Dispose();
             rshape.Dispose();
             dshape.Dispose();

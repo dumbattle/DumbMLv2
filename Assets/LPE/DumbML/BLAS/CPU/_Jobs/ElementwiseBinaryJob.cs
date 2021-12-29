@@ -32,9 +32,9 @@ namespace DumbML.BLAS.CPU {
             public int osize;
 
             public void Init(FloatCPUTensorBuffer left, FloatCPUTensorBuffer right, FloatCPUTensorBuffer output) {
-                lv = new NativeArray<float>(left.buffer, Allocator.TempJob);
-                rv = new NativeArray<float>(right.buffer, Allocator.TempJob);
-                ov = new NativeArray<float>(output.buffer, Allocator.TempJob);
+                lv = left.buffer;
+                rv = right.buffer;
+                ov = output.buffer;
 
                 lShape = new NativeArray<int>(left.shape, Allocator.TempJob);
                 rShape = new NativeArray<int>(right.shape, Allocator.TempJob);
@@ -50,9 +50,6 @@ namespace DumbML.BLAS.CPU {
             }
             
             public void Dispose() {
-                lv.Dispose();
-                rv.Dispose();
-                ov.Dispose();
                 lShape.Dispose();
                 rShape.Dispose();
                 oShape.Dispose();

@@ -19,8 +19,8 @@ namespace DumbML.BLAS.CPU {
         int rank;
 
         public TransposeJob(FloatCPUTensorBuffer src, int[] perm, FloatCPUTensorBuffer dest, int[] strides) {
-            this.src = new NativeArray<float>(src.buffer, Allocator.TempJob);
-            result = new NativeArray<float>(dest.buffer, Allocator.TempJob);
+            this.src = src.buffer;
+            result = dest.buffer;
 
             srcShape = new NativeArray<int>(src.shape, Allocator.TempJob);
             this.perm = new NativeArray<int>(perm, Allocator.TempJob);
@@ -50,8 +50,6 @@ namespace DumbML.BLAS.CPU {
         }
 
         public void Dispose() {
-            result.Dispose();
-            src.Dispose();
             srcShape.Dispose();
             perm.Dispose();
             strides.Dispose();

@@ -16,8 +16,6 @@ namespace DumbML.BLAS.CPU {
             var j = new TransposeJob(src, perm, dest, strides);
             var h = j.Schedule(src.size, 1);
             h.Complete();
-
-            j.result.CopyTo(dest.buffer);
             j.Dispose();
             Utils.Return(strides);
         }

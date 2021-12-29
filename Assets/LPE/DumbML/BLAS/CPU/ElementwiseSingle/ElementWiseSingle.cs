@@ -11,11 +11,6 @@ namespace DumbML.BLAS.CPU {
             var j = new ElementWiseSingleJobs.Copy(input, dest);
             var h = j.Schedule(input.size, 64);
             h.Complete();
-            j.result.CopyTo(dest.buffer);
-            j.Dispose();
-            //for (int i = 0; i < input.size; i++) {
-            //    dest.buffer[i] = input.buffer[i];
-            //}
         }
         public static void Sqr(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest) {
             if (!ShapeUtility.SameShape(input.shape, dest.shape)) {
@@ -25,12 +20,6 @@ namespace DumbML.BLAS.CPU {
             var j = new ElementWiseSingleJobs.Sqr(input, dest);
             var h = j.Schedule(input.size, 64);
             h.Complete();
-            j.result.CopyTo(dest.buffer);
-            j.Dispose();
-            //for (int i = 0; i < input.size; i++) {
-            //    var x = input.buffer[i];
-            //    dest.buffer[i] = x * x;
-            //}
         }
     }
 }
