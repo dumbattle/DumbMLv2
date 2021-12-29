@@ -1,35 +1,19 @@
 ﻿using LPE;
 using System;
 using Unity.Jobs;
-using Unity.Collections;
 
 namespace DumbML.BLAS.CPU {
     public static class MatrixMult {
-        static ObjectPool<ComputeDelegateCache> forwardIterationPool
-            = new ObjectPool<ComputeDelegateCache>(() => new ComputeDelegateCache());
-
-
         public static void Compute(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest,
                                    bool transposeL = false, bool transposeR = false) {
             var (numBatches, numBatchesL, numBatchesR) = CheckShapes(l, r, dest, transposeL, transposeR);
 
-            // compute
-            ComputeDelegateCache forward = forwardIterationPool.Get();
-            forward.left = l;
-            forward.right = r;
-            forward.output = dest;
-            forward.batchCount = numBatches;
-            forward.batchCountL = numBatchesL;
-            forward.batchCountR = numBatchesR;
-            forward.transposeL = transposeL;
-            forward.transposeR = transposeR;
-            var cb = ThreadPool.ForWithCallback(0, numBatches, forward.CallForwardAction);
-            cb.Wait();
-            // for testing
-            //for (int i = 0; i < numBatches; i++) {
-            //    forward.CallForwardAction(i);
-            //}
-            forwardIterationPool.Return(forward);
+            var j = new MatrixMultJob(l, r, dest, transposeL, transposeR, numBatchesL, numBatchesR);
+
+            var h = j.Schedule(dest.size, 1);
+            h.Complete();
+            j.result.CopyTo(dest.buffer);
+            j.Dispose();
         }
 
         private static (int, int, int) CheckShapes(FloatCPUTensorBuffer l, FloatCPUTensorBuffer r, FloatCPUTensorBuffer dest, bool tl, bool tr) {
@@ -121,167 +105,6 @@ namespace DumbML.BLAS.CPU {
             }
 
             return (numBatches, numBatchesL, numBatchesR);
-        }
-
-
-
-        /// <summary>
-        /// Creating delegates creates garbage (when we pass to thread pool), so we cache it in this class
-        /// </summary>
-        class ComputeDelegateCache {
-            public FloatCPUTensorBuffer left;
-            public FloatCPUTensorBuffer right;
-            public FloatCPUTensorBuffer output;
-
-            public int batchCount;
-            public int batchCountL;
-            public int batchCountR;
-
-            public Action<int> CallForwardAction;
-            public bool transposeL;
-            public bool transposeR;
-            public ComputeDelegateCache() {
-                CallForwardAction = CallForward;
-                //CallBackwardsAction = CallBackwards;
-            }
-           
-            void CallForward(int i) {
-                // cache
-                int ldims = left.Rank();
-                int rdims = right.Rank();
-                int ddims = output.Rank();
-
-                int lx = left.shape[transposeL ? ldims - 1: ldims - 2];
-                int ly = left.shape[transposeL ? ldims - 2 : ldims - 1];
-                int rx = right.shape[transposeR ? rdims - 1 : rdims - 2];
-                int ry = right.shape[transposeR ? rdims - 2 : rdims - 1];
-
-
-                var lv = left.buffer;
-                var rv = right.buffer;
-                var dv = output.buffer;
-
-                // check for broadcasting
-                int lind = 0;
-                int rind = 0;
-                int remaining = i;
-                int stride = batchCount;
-                int strideL = batchCountL;
-                int strideR = batchCountR;
-
-
-                for (int j = ddims; j > 2; j--) {
-                    int ll = ldims - j;
-                    int rr = rdims - j;
-                    int dd = ddims - j;
-
-                    int lsize = ll >= 0 ? left.shape[ll] : 1;
-                    int rsize = rr >= 0 ? right.shape[rr] : 1;
-                    int dsize = output.shape[dd];
-
-                    stride /= dsize;
-                    strideL /= lsize;
-                    strideR /= rsize;
-                    int ind = remaining / stride; // value at this index
-                    remaining %= stride;
-
-                    if (ind == 0) {
-                        continue;
-                    }
-
-                    // if broadcast (ie. shape is 1), do not update ind
-                    if (lsize != 1) {
-                        lind += ind * strideL;
-                    }
-                    if (rsize != 1) {
-                        rind += ind * strideR;
-                    }
-                }
-
-                // get offsets
-                int loffset = lx * ly * lind;
-                int roffset = rx * ry * rind;
-                int doffset = lx * ry * i;
-
-                int lxStride = 1;
-                int liStride = 1;
-
-                int riStride = 1;
-                int ryStride = 1;
-
-                if (transposeL) {
-                    liStride = lx;
-                }
-                else {
-                    lxStride = ly;
-                }
-                if (transposeR) {
-                    ryStride = rx;
-                }
-                else {
-                    riStride = ry;
-                }
-
-                int di = doffset;
-                for (int x = 0; x < lx; x++) {
-                    for (int y = 0; y < ry; y++) {
-                        float sum = 0;
-                        int li = x * lxStride + loffset;
-                        int ri = y * ryStride + roffset;
-                        for (int j = 0; j < ly; j++) {
-                            //sum += l[x, i] * r[i, y];
-                            var a = lv[li];
-                            var b = rv[ri];
-                            sum += a * b;
-                            li += liStride;
-                            ri += riStride;
-                        }
-                        //dest[x, y] += sum;
-                        dv[di] = sum;
-                        di++;
-                    }
-                }
-            }
-        }
-
-    }
-
-
-
-    public struct MatrixMultJob : IJobParallelFor {
-        public NativeArray<float> result;
-     
-        NativeArray<float> left;
-        NativeArray<float> right;
-
-        NativeArray<int> lshape;
-        NativeArray<int> rshape;
-        NativeArray<int> dshape;
-
-        int lrank;
-        int rrank;
-        int drank;
-
-        int mDim;
-        int innerDim;
-        int nDim;
-        int batchCountL;
-        int batchCountR;
-
-        bool transposeL;
-        bool transposeR;
-
-        public void Execute(int index) {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose() {
-            result.Dispose();
-            left.Dispose();
-            right.Dispose();
-            lshape.Dispose();
-            rshape.Dispose();
-            dshape.Dispose();
         }
     }
 }
