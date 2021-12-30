@@ -17,6 +17,9 @@ namespace Tests.BLAS.CPU {
 
             DumbML.BLAS.CPU.Broadcast.Compute(input, et.shape, output);
             CollectionAssert.AreEqual(et.data, output.buffer, $"E: {et.data.ContentString()}\nG: {output.buffer.ContentString()}");
+
+            input.Dispose();
+            output.Dispose();
         }
 
         [Test]
