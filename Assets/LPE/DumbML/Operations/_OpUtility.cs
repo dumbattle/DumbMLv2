@@ -48,17 +48,17 @@ namespace DumbML {
             return result;
         }
     
-        public static List<int> BroadcastBackwardsReductionShape(int[] inputShape, int[] errShape) {
+        public static List<int> BroadcastBackwardsReductionShape(int[] inputShape, int[] reducedShape) {
             List<int> result = new List<int>();
 
-            for (int i = errShape.Length; i > 0; i--) {
+            for (int i = reducedShape.Length; i > 0; i--) {
                 int idim = inputShape.Length - i;
-                int edim = errShape.Length - i;
+                int edim = reducedShape.Length - i;
 
                 if (idim < 0) {
                     result.Add(edim);
                 }
-                else if (errShape[edim] != 1 && inputShape[idim] == 1) {
+                else if (reducedShape[edim] != 1 && inputShape[idim] == 1) {
                     result.Add(edim);
                 }
             }

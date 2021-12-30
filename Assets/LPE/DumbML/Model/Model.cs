@@ -114,16 +114,22 @@ namespace DumbML {
             Dictionary<Operation, Operation> src = allNodes.ToDictionary(x => x.op, x => (Operation)new BufferOp(x.outputBuffer));
             Dictionary<Operation, Operation> errors = allNodes.ToDictionary(x => x.op, x => (Operation)null);
 
-            foreach (var op in wrt) {
-                Operation seed = new Ones(op.shape);
-                errors[op] = seed;
-            }
+            //foreach (var op in wrt) {
+            //    Operation seed = new Ones(op.shape);
+            //    errors[op] = seed;
+            //}
 
             for (int i = allNodes.Count - 1; i >= 0; i--) {
                 Operation op = allNodes[i].op;
                 Operation[] inputs = (from x in op.inner select src[x]).ToArray();
 
-                var inputGrads = op.BuildBackwards(inputs, src[op], errors[op]);
+                Operation err = errors[op];
+                if (err == null) {
+                    Operation seed = new Ones(op.shape);
+                    errors[op] = seed;
+                    err = seed;
+                }
+                var inputGrads = op.BuildBackwards(inputs, src[op], err);
 
                 for (int j = 0; j < inputs.Length; j++) {
                     var e = errors[op.inner[j]];

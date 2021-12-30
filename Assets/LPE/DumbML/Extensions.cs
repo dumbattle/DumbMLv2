@@ -65,7 +65,15 @@ namespace DumbML {
         public static T Last<T>(this List<T> a) {
             return a[a.Count - 1];
         }
-
+        public static bool Contains(this int[] a, int item) {
+            foreach (var t in a) {
+                if (t == item) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
         public static bool CompareContents<T>(this T[] a, T[] b) {
             if (a.Length != b.Length) {
                 return false;

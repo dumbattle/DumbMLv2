@@ -1,0 +1,59 @@
+#pragma kernel Broadcast
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> output;
+
+int4 srcShape[16];
+int4 shape[16];
+
+uint isize;
+uint dsize;
+uint shapeRank;
+uint srcRank;
+
+
+
+uint GetSrcShape(uint ind) {
+    return srcShape[ind / 4][ind % 4];
+}
+
+uint GetDestShape(uint ind) {
+    return shape[ind / 4][ind % 4];
+}
+
+
+[numthreads(64, 1, 1)]
+void Broadcast(uint3 id : SV_DispatchThreadID) {
+    if (id.x > dsize) {
+        return;
+    }
+
+    uint offset = 0;
+    uint srcStride = isize;
+    uint dStride = dsize;
+    uint remaining = id.x;
+
+
+    for (int i = shapeRank; i > 0; i--) {
+        uint srcind = srcRank - i;
+        uint shpind = shapeRank - i;
+
+        bool isBroadcasted = srcind < 0 || GetSrcShape(srcind) != GetDestShape(shpind);
+
+        uint dimSize = GetDestShape(shpind);
+        dStride /= dimSize;
+
+        uint indCount = remaining / dStride;
+        remaining = remaining % dStride;
+
+        if (!isBroadcasted) {
+            srcStride /= dimSize;
+            offset += indCount * srcStride;
+        }
+    }
+
+    output[id.x] = input[offset];
+}
+
+

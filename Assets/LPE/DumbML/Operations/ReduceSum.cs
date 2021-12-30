@@ -55,13 +55,20 @@ namespace DumbML {
         }
 
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-            // not implemented yet
-            // requires a broadcast op
+            int[] a = axis;
 
-            //reshape to get correct Rank
-            // broadcast
+            if (a == null) {
+                a = new int[inputs[0].shape.Length - 1];
+                for (int i = 0; i < a.Length; i++) {
+                    a[i] = i;
+                }
+            }
+
+            Operation op = new AddDims(error, a);
+            op = new Broadcast(op, inputs[0]);
+
             return new Operation[] {
-               null
+               op
            };
         }
 

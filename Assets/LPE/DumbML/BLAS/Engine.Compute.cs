@@ -48,6 +48,17 @@
                     CPU.ElementwiseBinary.Add(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
+            public static void Broadcast(ITensorBuffer buffer, int[] targetShape, ITensorBuffer dest) {
+                Device d = buffer.device;
+
+                if (d == Device.gpu) {
+                    GPU.Broadcast.Compute(AsFloatGPU(buffer), targetShape, AsFloatGPU(dest));
+                }
+                else {
+                    CPU.Broadcast.Compute(AsFloatCPU(buffer), targetShape, AsFloatCPU(dest));
+                }
+            }
+
             public static void Copy(ITensorBuffer src, ITensorBuffer dest, bool ignoreShape = false) {
                 Device deviceType = AssertSameDeviceType(src, dest);
 

@@ -2,6 +2,8 @@
 
 namespace DumbML.BLAS.GPU {
     public static class Kernels {
+        public static ComputeShader broadcast => _broadcast = _broadcast ?? Resources.Load<ComputeShader>("GPU Kernels/Broadcast");
+        static ComputeShader _broadcast;
         public static ComputeShader elementWiseBinary => _elementWiseBinary = _elementWiseBinary ?? Resources.Load<ComputeShader>("GPU Kernels/Elementwise Binary");
         static ComputeShader _elementWiseBinary;
 

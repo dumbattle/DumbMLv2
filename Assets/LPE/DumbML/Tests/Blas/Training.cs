@@ -19,11 +19,9 @@ namespace Tests.DumbMLTests {
 
             var op = new Add(input, b);
             var loss = Loss.MSE(op, truth);
-            var l2 = new ReduceSum(loss, (int[])null);
-            Model m = new Model(new InputOp[] { input, truth }, new Operation[] { op, loss, l2 });
+            Model m = new Model(new InputOp[] { input, truth }, new Operation[] { op, loss });
             FloatTensor outputTensor = new FloatTensor(2, 1);
-            FloatTensor lossTensor = new FloatTensor(2, 1);
-            FloatTensor l2Tensor = new FloatTensor(1);
+            FloatTensor lossTensor = new FloatTensor(1);
 
             m.InitTraining(new SGD(momentum: 0, lr: .01f), loss);
             StringBuilder sb = new StringBuilder();
@@ -33,7 +31,7 @@ namespace Tests.DumbMLTests {
             int numIterations = 1000;
             for (int i = 0; i < numIterations; i++) {
                 Run();
-                float output = l2Tensor.data[0];
+                float output = lossTensor.data[0];
 
                 if (output > prev) {
                     fail++;
@@ -55,8 +53,8 @@ namespace Tests.DumbMLTests {
             void Run() {
                 m.Call(FloatTensor.FromArray(new[,] { { 1} }), FloatTensor.FromArray(new[,] { { 9 } }));
                 m.Backwards();
-                m.Call(FloatTensor.FromArray(new[,] { { 1 }, { 3 } }), FloatTensor.FromArray(new[,] { { 9 }, { 11 } })).ToTensors(outputTensor, lossTensor, l2Tensor);
-                sb.Append($"Output: {outputTensor.data.ContentString()}\nLoss: {lossTensor.data.ContentString()}\nL2: {l2Tensor.data.ContentString()}\n");
+                m.Call(FloatTensor.FromArray(new[,] { { 1 }, { 3 } }), FloatTensor.FromArray(new[,] { { 9 }, { 11 } })).ToTensors(outputTensor, lossTensor);
+                sb.Append($"Output: {outputTensor.data.ContentString()}\nLoss: {lossTensor.data.ContentString()}\n");
                 m.Backwards();
             }
         }
@@ -85,12 +83,11 @@ namespace Tests.DumbMLTests {
 
             var expectedOp = new InputOp(outShape);
             var loss = Loss.MSE(mm, expectedOp);
-            var l2 = new ReduceSum(loss, (int[])null);
 
             weight.InitValue(() => Random.Range(-.1f, .1f));
 
 
-            Model model = new Model(new[] { inputOp, expectedOp }, new Operation[] { mm, loss, l2 });
+            Model model = new Model(new[] { inputOp, expectedOp }, new Operation[] { mm, loss });
 
             FloatTensor outputTensor = new FloatTensor(batchCount, 4, 6);
             FloatTensor lossTensor = new FloatTensor(1);
@@ -102,12 +99,6 @@ namespace Tests.DumbMLTests {
             int numIterations = 1000;
             for (int i = 0; i < numIterations; i++) {
                 Run();
-                float output = lossTensor.data[0];
-
-                if (output > prev) {
-                    fail++;
-                }
-                prev = output;
             }
 
             model.Dispose();
@@ -121,9 +112,21 @@ namespace Tests.DumbMLTests {
             }
 
             void Run() {
-                model.Call(inputTensor, expectedTensor).ToTensors(outputTensor, (Tensor<int>)null, lossTensor);
-                sb.Append($"Loss: {lossTensor.data.ContentString()}\n");
+                model.Call(inputTensor, expectedTensor).ToTensors(outputTensor, lossTensor);
                 model.Backwards();
+
+                float output = lossTensor.data[0];
+                string l;
+                if (output > prev) {
+                    fail++;
+                    l = $"<color=red>Loss: {lossTensor.data.ContentString()} </color>\n";
+                }
+                else {
+                    l = $"Loss: {lossTensor.data.ContentString()}\n";
+                }
+                prev = output;
+
+                sb.Append(l);
             }
         }
 

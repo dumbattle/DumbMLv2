@@ -5,8 +5,8 @@ using System;
 
 
 namespace Tests.BLAS.CPU {
-    public class BroadcastTest {
-        static void Run(Array src, Array expected) {
+    public class BroadcastTest : BroadcastTestBase {
+        public override void Run(Array src, Array expected) {
             FloatTensor at = FloatTensor.FromArray(src);
             FloatTensor et = FloatTensor.FromArray(expected);
 
@@ -20,30 +20,6 @@ namespace Tests.BLAS.CPU {
 
             input.Dispose();
             output.Dispose();
-        }
-
-        [Test]
-        public void Test1() {
-            int[] inputShape = { 3, 4 };
-            int[] targetShape = { 4, 7, 3, 4 };
-
-            float[,] a = new float[3,4];
-            float[,,,] b= new float[4, 7, 3, 4];
-
-            for (int a1 = 0; a1 < inputShape[0]; a1++) {
-                for (int a2 = 0; a2 < inputShape[1]; a2++) {
-                    float v = UnityEngine.Random.Range(0,5);
-
-                    a[a1, a2] = v;
-                    for (int b1 = 0; b1 < targetShape[0]; b1++) {
-                        for (int b2 = 0; b2 < targetShape[1]; b2++) {
-                            b[b1, b2, a1, a2] = v;
-                        }
-                    }
-                }
-            }
-
-            Run(a, b);
         }
     }
 }

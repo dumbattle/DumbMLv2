@@ -1,4 +1,6 @@
-﻿namespace DumbML {
+﻿using System;
+
+namespace DumbML {
     public class Reshape : Operation {
         int[] s;
 
