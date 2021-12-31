@@ -1,0 +1,33 @@
+#pragma kernel bool_float
+#pragma kernel float_bool
+
+#pragma kernel float_int
+#pragma kernel int_float
+
+#pragma kernel int_bool
+#pragma kernel bool_int
+
+#define BUILD(s, d) \
+    [numthreads(64, 1, 1)]\
+    void s##_##d(uint3 id : SV_DispatchThreadID) {\
+        if (id.x > (uint)count) {\
+            return;\
+        }\
+        buffer_##d[id.x] = (d)buffer_##s[id.x];\
+    }
+
+
+RWStructuredBuffer<float> buffer_float;
+RWStructuredBuffer<bool> buffer_bool;
+RWStructuredBuffer<int> buffer_int;
+int count;
+
+
+BUILD(bool, float)
+BUILD(float, bool)
+
+BUILD(float, int)
+BUILD(int, float)
+
+BUILD(int, bool)
+BUILD(bool, int)

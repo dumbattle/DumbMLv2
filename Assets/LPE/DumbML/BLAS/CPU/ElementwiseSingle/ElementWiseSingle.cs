@@ -22,4 +22,5 @@ namespace DumbML.BLAS.CPU {
             h.Complete();
         }
     }
+
 }

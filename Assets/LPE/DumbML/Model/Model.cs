@@ -92,49 +92,52 @@ namespace DumbML {
 
             }
             optimizer.Update();
-            //foreach (var n in allNodes) {
-            //    n.ClearError();
-            //}
-
-            //foreach (var n in lossNodes) {
-            //    BLAS.Engine.Compute.SetTo1s(n.errorBuffer);
-            //}
-
-            //optimizer.ZeroGrad();
-            //for (int i = allNodes.Count - 1; i >= 0; i--) {
-            //    allNodes[i].Backwards(gradients);
-            //}
-            //optimizer.Update();
         }
 
         public void CreateBackwardsModel(Operation[] grads, Operation[] wrt) {
-
+            // outputs of all forward nodes
             Dictionary<Operation, Operation> src = allNodes.ToDictionary(x => x.op, x => (Operation)new BufferOp(x.outputBuffer));
+
+            // errors of all forward nodes
             Dictionary<Operation, Operation> errors = allNodes.ToDictionary(x => x.op, x => (Operation)null);
 
-            //foreach (var op in wrt) {
-            //    Operation seed = new Ones(op.shape);
-            //    errors[op] = seed;
-            //}
+            // seed loss
+            foreach (var op in wrt) {
+                Operation seed = new Ones(op.shape);
+                errors[op] = seed;
+            }
 
             for (int i = allNodes.Count - 1; i >= 0; i--) {
                 Operation op = allNodes[i].op;
                 Operation[] inputs = (from x in op.inner select src[x]).ToArray();
 
                 Operation err = errors[op];
+
                 if (err == null) {
-                    Operation seed = new Ones(op.shape);
-                    errors[op] = seed;
-                    err = seed;
+                    // not needed for backwards model
+                    continue;
                 }
+
                 var inputGrads = op.BuildBackwards(inputs, src[op], err);
 
+                if (inputGrads == null) {
+                    // no grads
+                    continue;
+                }
+
                 for (int j = 0; j < inputs.Length; j++) {
+                    // current partial error
                     var e = errors[op.inner[j]];
+
+                    // error from this op
                     var g = inputGrads[j];
+
                     if(g == null) {
+                        // no gradient to input
                         continue;
                     }
+
+                    // update or init error
                     e = e == null ? g : new Add(e, g);
                     errors[op.inner[j]] = e;
                 }
@@ -156,7 +159,6 @@ namespace DumbML {
             }
 
 
-            //lossNodes = (from x in loss select (from y in allNodes where y.op == x select y).First()).ToArray();
             optimizer = o;
             gradients = o.grad;
             CreateBackwardsModel(o.grad.keys, loss);

@@ -65,6 +65,4 @@ namespace DumbML.BLAS.CPU {
             }
         }
     }
-
-
 }

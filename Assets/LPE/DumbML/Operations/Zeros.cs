@@ -1,13 +1,15 @@
 ﻿namespace DumbML {
-    public class Ones : Operation {
-        public Ones(params int[] shape) {
+    public class Zeros : Operation {
+        public Zeros(params int[] shape) {
             BuildOp(shape, DType.Float);
         }
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
-            BLAS.Engine.Compute.SetTo1s(result);
+            BLAS.Engine.Compute.SetTo0s(result);
         }
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
             return null;
         }
     }
+
+
 }

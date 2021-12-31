@@ -119,7 +119,17 @@
                     CPU.Reduction.Sum(AsFloatCPU(buffer), axis, AsFloatCPU(dest));
                 }
             }
-            
+
+            public static void SetTo0s(ITensorBuffer buffer) {
+                Device d = buffer.device;
+
+                if (d == Device.gpu) {
+                    GPU.SetValues.Zero(AsFloatGPU(buffer));
+                }
+                else {
+                    CPU.SetValues.Zero(AsFloatCPU(buffer));
+                }
+            }
             public static void SetTo1s(ITensorBuffer buffer) {
                 Device d = buffer.device;
 

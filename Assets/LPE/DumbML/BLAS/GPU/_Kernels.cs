@@ -1,9 +1,16 @@
 ﻿using UnityEngine;
 
 namespace DumbML.BLAS.GPU {
+    /// <summary>
+    /// Lazy-loaded ComputeShaders
+    /// </summary>
     public static class Kernels {
         public static ComputeShader broadcast => _broadcast = _broadcast ?? Resources.Load<ComputeShader>("GPU Kernels/Broadcast");
         static ComputeShader _broadcast;
+
+        public static ComputeShader cast => _cast = _cast ?? Resources.Load<ComputeShader>("GPU Kernels/Cast");
+        static ComputeShader _cast;
+
         public static ComputeShader elementWiseBinary => _elementWiseBinary = _elementWiseBinary ?? Resources.Load<ComputeShader>("GPU Kernels/Elementwise Binary");
         static ComputeShader _elementWiseBinary;
 

@@ -18,10 +18,7 @@ namespace DumbML.BLAS.GPU {
             int size = input.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-       
-        
-        
-        
+
         public static void Abs(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output) {
             Call(input, output, "Abs");
         }
@@ -41,7 +38,4 @@ namespace DumbML.BLAS.GPU {
             Call(input, output, "Sqr");
         }
     }
-
-
 }
-
