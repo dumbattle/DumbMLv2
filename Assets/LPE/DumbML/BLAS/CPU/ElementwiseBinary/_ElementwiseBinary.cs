@@ -5,8 +5,9 @@ using Unity.Jobs;
 
 namespace DumbML.BLAS.CPU {
     public static partial class ElementwiseBinary {
-        static class Computation<T> where T : struct, ElementwiseBinaryJob.IImplementation {
-            public static void Forward(FloatCPUTensorBuffer a, FloatCPUTensorBuffer b, FloatCPUTensorBuffer output, ElementwiseBinaryJob.Job<T> j) {
+        static class Computation {
+            public static void Forward<T, L, R, D> (CPUTensorBuffer<L> a, CPUTensorBuffer<R> b, CPUTensorBuffer<D> output, ElementwiseBinaryJob.Job<T, L, R, D> j)
+                    where T : struct, ElementwiseBinaryJob.IImplementation<L, R, D> where L : struct where R : struct where D : struct {
                 CheckShape(a.shape, b.shape, output.shape);
                 j.Init(a, b, output);
                 var h = j.Schedule(output.size, 1);
@@ -23,7 +24,7 @@ namespace DumbML.BLAS.CPU {
                     throw new InvalidOperationException($"Output Tensors do not have correcct rank\n  Expected{ddims}\n  Got:{d.ContentString()}");
                 }
 
-    
+
                 for (int i = 1; i <= ddims; i++) {
                     int dimSize = -1;
 
@@ -63,6 +64,7 @@ namespace DumbML.BLAS.CPU {
                 }
             }
         }
-
     }
+
+
 }

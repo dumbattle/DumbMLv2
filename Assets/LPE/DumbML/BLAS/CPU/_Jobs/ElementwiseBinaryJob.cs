@@ -5,16 +5,16 @@ using Unity.Collections;
 namespace DumbML.BLAS.CPU {
     public static class ElementwiseBinaryJob {
         
-        public interface IImplementation {
-            float Forward(float l, float r);
+        public interface IImplementation<L,R,D> where L : struct where R : struct where D : struct {
+            D Forward(L l, R r);
         }
 
-        public struct Job<T> : IJobParallelFor where T : struct, IImplementation {
+        public struct Job<T, L, R, D> : IJobParallelFor where T : struct, IImplementation<L,R,D> where L : struct where R : struct where D : struct {
             [ReadOnly]
-            public NativeArray<float> lv;
+            public NativeArray<L> lv;
             [ReadOnly]
-            public NativeArray<float> rv;
-            public NativeArray<float> ov;
+            public NativeArray<R> rv;
+            public NativeArray<D> ov;
 
             [ReadOnly]
             public NativeArray<int> lShape;
@@ -31,7 +31,7 @@ namespace DumbML.BLAS.CPU {
             public int rsize;
             public int osize;
 
-            public void Init(FloatCPUTensorBuffer left, FloatCPUTensorBuffer right, FloatCPUTensorBuffer output) {
+            public void Init(CPUTensorBuffer<L> left, CPUTensorBuffer<R> right, CPUTensorBuffer<D> output) {
                 lv = left.buffer;
                 rv = right.buffer;
                 ov = output.buffer;
@@ -100,7 +100,5 @@ namespace DumbML.BLAS.CPU {
                 ov[i] =  t.Forward(lv[lind], rv[rind]);
             }
         }
-    
-    
     }
 }

@@ -4,6 +4,18 @@
 #pragma kernel Add_Self
 #pragma kernel Add_SelfInplace
 
+#pragma kernel Max
+#pragma kernel Max_InplaceL
+#pragma kernel Max_InplaceR
+#pragma kernel Max_Self
+#pragma kernel Max_SelfInplace
+
+#pragma kernel Min
+#pragma kernel Min_InplaceL
+#pragma kernel Min_InplaceR
+#pragma kernel Min_Self
+#pragma kernel Min_SelfInplace
+
 #pragma kernel Multiply
 #pragma kernel Multiply_InplaceL
 #pragma kernel Multiply_InplaceR
@@ -138,6 +150,18 @@ void _Add(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructured
     uint2 xx = GetIndices(x);
     o[x] = l[xx[0]] + r[xx[1]];
 }
+void _Max(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    uint2 xx = GetIndices(x);
+    float a = l[xx[0]];
+    float b = r[xx[1]];
+    o[x] = a > b ? a : b;
+}
+void _Min(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    uint2 xx = GetIndices(x);
+    float a = l[xx[0]];
+    float b = r[xx[1]];
+    o[x] = a < b ? a : b;
+}
 void _Multiply(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
     uint2 xx = GetIndices(x);
     o[x] = l[xx[0]] * r[xx[1]];
@@ -149,5 +173,7 @@ void _Subtract(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStruc
 
 
 BUILD(Add)
+BUILD(Max)
+BUILD(Min)
 BUILD(Multiply)
 BUILD(Subtract)

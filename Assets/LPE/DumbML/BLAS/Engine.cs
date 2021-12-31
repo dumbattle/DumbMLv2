@@ -29,6 +29,14 @@ namespace DumbML.BLAS {
                         return new IntGPUTensorBuffer(shape);
                     }
                     break;
+                case DType.Bool:
+                    if (device == Device.cpu) {
+                        return new BoolCPUTensorBuffer(shape);
+                    }
+                    else if (device == Device.gpu) {
+                        return new BoolGPUTensorBuffer(shape);
+                    }
+                    break;
                 default:
                     throw new System.NotImplementedException($"No buffer with type: {type}");
             }

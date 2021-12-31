@@ -199,49 +199,61 @@ namespace DumbML.BLAS.GPU {
 
         public static void Add(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Add";
-            const string name2 = name1 + _InplaceL;
-            const string name3 = name1 + _InplaceR;
-            const string name4 = name1 + _Self;
-            const string name5 = name1 + _SelfInplace;
 
             Names n;
             n.normal = name1;
-            n.inplaceL = name2;
-            n.inplaceR = name3;
-            n.self = name4;
-            n.selfInplace = name5;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
+
+            Call(left, right, output, n);
+        }
+        public static void Max(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
+            const string name1 = "Max";
+
+            Names n;
+            n.normal = name1;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
+
+            Call(left, right, output, n);
+        }
+        public static void Min(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
+            const string name1 = "Min";
+
+            Names n;
+            n.normal = name1;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
 
             Call(left, right, output, n);
         }
         public static void Multiply(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Multiply";
-            const string name2 = name1 + _InplaceL;
-            const string name3 = name1 + _InplaceR;
-            const string name4 = name1 + _Self;
-            const string name5 = name1 + _SelfInplace;
 
             Names n;
             n.normal = name1;
-            n.inplaceL = name2;
-            n.inplaceR = name3;
-            n.self = name4;
-            n.selfInplace = name5;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
 
             Call(left, right, output, n);
         }
         public static void Subtract(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Subtract";
-            const string name2 = name1 + _InplaceL;
-            const string name3 = name1 + _InplaceR;
-            const string name4 = name1 + _Self;
-            const string name5 = name1 + _SelfInplace;
 
             Names n;
             n.normal = name1;
-            n.inplaceL = name2;
-            n.inplaceR = name3;
-            n.self = name4;
-            n.selfInplace = name5;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
 
             Call(left, right, output, n);
         }
