@@ -21,8 +21,8 @@ namespace DumbML.BLAS.CPU {
             public NativeArray<float> result;
 
             public Sqr(FloatCPUTensorBuffer src, FloatCPUTensorBuffer dest) {
-                this.src = new NativeArray<float>(src.buffer, Allocator.TempJob);
-                this.result = new NativeArray<float>(dest.buffer, Allocator.TempJob);
+                this.src = src.buffer;
+                result = dest.buffer;
             }
             public void Execute(int index) {
                 var v = src[index];

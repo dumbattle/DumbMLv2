@@ -7,7 +7,6 @@ namespace DumbML {
     public class Model {
         ModelNode[] inputNodes;
         ModelNode[] outputNodes;
-        //ModelNode[] lossNodes;
         List<ModelNode> allNodes;
         IReadOnlyList<ITensorBuffer> outputBuffers;
 
@@ -80,7 +79,6 @@ namespace DumbML {
             foreach (var n in allNodes) {
                 n.Forward();
             }
-
             return outputBuffers;
         }
       

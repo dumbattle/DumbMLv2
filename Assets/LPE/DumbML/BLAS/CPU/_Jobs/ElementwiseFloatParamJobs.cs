@@ -1,12 +1,13 @@
 ﻿using Unity.Jobs;
 using Unity.Collections;
-
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace DumbML.BLAS.CPU {
     public static class ElementwiseFloatParamJobs {
         public struct Add : IJobParallelFor {
             NativeArray<float> src;
-            public NativeArray<float> result;
+            [NativeDisableContainerSafetyRestriction]
+            NativeArray<float> result;
             float p;
             public Add(FloatCPUTensorBuffer src, float p, FloatCPUTensorBuffer dest) {
                 this.src = src.buffer;
@@ -20,7 +21,8 @@ namespace DumbML.BLAS.CPU {
 
         public struct Multiply : IJobParallelFor {
             NativeArray<float> src;
-            public NativeArray<float> result;
+            [NativeDisableContainerSafetyRestriction]
+            NativeArray<float> result;
             float p;
             public Multiply(FloatCPUTensorBuffer src, float p, FloatCPUTensorBuffer dest) {
                 this.src = src.buffer;

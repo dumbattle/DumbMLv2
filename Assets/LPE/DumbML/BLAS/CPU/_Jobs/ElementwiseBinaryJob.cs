@@ -1,6 +1,6 @@
 ﻿using Unity.Jobs;
 using Unity.Collections;
-
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace DumbML.BLAS.CPU {
     public static class ElementwiseBinaryJob {
@@ -14,6 +14,7 @@ namespace DumbML.BLAS.CPU {
             public NativeArray<L> lv;
             [ReadOnly]
             public NativeArray<R> rv;
+            [NativeDisableContainerSafetyRestriction]
             public NativeArray<D> ov;
 
             [ReadOnly]

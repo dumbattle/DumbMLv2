@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace DumbML {
-    public class FloatGPUTensorBuffer : GPUTensorBuffer {
+    public class FloatGPUTensorBuffer : GPUTensorBuffer<float> {
         public override DType dtype => DType.Float;
 
         public FloatGPUTensorBuffer(params int[] shape) : base(shape) { }

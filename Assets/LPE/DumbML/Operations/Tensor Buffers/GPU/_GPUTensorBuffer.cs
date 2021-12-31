@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace DumbML {
-    public abstract class GPUTensorBuffer : ITensorBuffer {
+    public abstract class GPUTensorBuffer<T> : ITensorBuffer where T : struct {
         public int[] shape { get; private set; }
         public int size { get; private set; }
         public int capacity => buffer.count;
@@ -64,7 +64,7 @@ namespace DumbML {
         }
 
 
-        public void CopyFrom<T>(Tensor<T> src) {
+        public void CopyFrom<U>(Tensor<U> src) {
             if (src.dtype != dtype) {
                 throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {src.dtype}\nDest: {dtype}");
             }
@@ -73,7 +73,7 @@ namespace DumbML {
             buffer.SetData(src.data, 0, 0, size);
         }
 
-        public void CopyTo<T>(Tensor<T> dest) {
+        public void CopyTo<U>(Tensor<U> dest) {
             if (dest.dtype != dtype) {
                 throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {dtype}\nDest: {dest.dtype}");
             }

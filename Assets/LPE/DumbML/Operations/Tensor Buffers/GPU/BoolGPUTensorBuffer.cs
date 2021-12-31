@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace DumbML {
-    public class BoolGPUTensorBuffer : GPUTensorBuffer {
+    public class BoolGPUTensorBuffer : GPUTensorBuffer<bool> {
         public override DType dtype => DType.Bool;
 
         public BoolGPUTensorBuffer(params int[] shape) : base(shape) { }

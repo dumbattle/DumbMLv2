@@ -28,123 +28,26 @@
 #pragma kernel Subtract_Self
 #pragma kernel Subtract_SelfInplace
 
+#pragma kernel Equals
+#pragma kernel Equals_Self
 
-#define BUILD(n) \
-    [numthreads(64, 1, 1)]\
-    void n(uint3 id : SV_DispatchThreadID) {\
-        if (id.x > (uint)count) {\
-            return;\
-        }\
-        _##n(left, right, output, id.x);\
-    }\
-    [numthreads(64, 1, 1)]\
-    void n##_InplaceL(uint3 id : SV_DispatchThreadID) {\
-        if (id.x > (uint)count) {\
-            return;\
-        }\
-        _##n(left, right, left, id.x);\
-    }\
-    [numthreads(64, 1, 1)]\
-    void n##_InplaceR(uint3 id : SV_DispatchThreadID) {\
-        if (id.x > (uint)count) {\
-            return;\
-        }\
-        _##n(left, right, right, id.x);\
-    }\
-    [numthreads(64, 1, 1)]\
-    void n##_Self(uint3 id : SV_DispatchThreadID) {\
-        if (id.x > (uint)count) {\
-            return;\
-        }\
-        _##n(left, left, output, id.x);\
-    }\
-    [numthreads(64, 1, 1)]\
-    void n##_SelfInplace(uint3 id : SV_DispatchThreadID) {\
-        if (id.x > (uint)count) {\
-            return;\
-        }\
-        _##n(left, left, left, id.x);\
-    }
+#pragma kernel NotEquals
+#pragma kernel NotEquals_Self
 
+#pragma kernel LessThan
+#pragma kernel LessThan_Self
 
-RWStructuredBuffer<float> left;
-RWStructuredBuffer<float> right;
-RWStructuredBuffer<float> output;
-int count;
+#pragma kernel LessThanOrEquals
+#pragma kernel LessThanOrEquals_Self
 
-int lrank;
-int rrank;
-int drank;
-int stride;
+#pragma kernel GreaterThan
+#pragma kernel GreaterThan_Self
 
-int batchCountL;
-int batchCountR;
+#pragma kernel GreaterThanOrEquals
+#pragma kernel GreaterThanOrEquals_Self
 
-int4 lshape[16];
-int4 rshape[16];
-int4 oshape[16];
+#include "includes/ElementwiseBinaryBuilds.cginc"
 
-
-
-uint GetLShape(uint ind) {
-    return lshape[ind / 4][ind % 4];
-}
-uint GetRShape(uint ind) {
-    return rshape[ind / 4][ind % 4];
-}
-uint GetOShape(uint ind) {
-    return oshape[ind / 4][ind % 4];
-}
-
-
-
-uint2 GetIndices(uint x) {
-    uint ind_raw = x;
-
-    uint batch = ind_raw / stride; // which batch are we on
-    uint batch_ind = ind_raw % stride; // index inside that batch
-
-    uint lind = 0;
-    uint rind = 0;
-    uint remaining = batch;
-    uint strideO = (uint)count / (uint)stride;
-    uint strideL = batchCountL;
-    uint strideR = batchCountR;
-
-    for (int j = drank; j > 0; j--) {
-        int ll = lrank - j;
-        int rr = rrank - j;
-        int dd = drank - j;
-
-        uint lsize = ll >= 0 ? GetLShape(ll) : 1;
-        uint rsize = rr >= 0 ? GetRShape(rr) : 1;
-        uint dsize = GetOShape(dd);
-
-        strideO /= dsize;
-        strideL /= lsize;
-        strideR /= rsize;
-
-        if (stride == 0) {
-            break;
-        }
-
-        uint ind = remaining / strideO; // value at this index
-        remaining %= strideO;
-
-
-        // if broadcast (ie. shape is 1), do not update ind
-        if (lsize != 1) {
-            lind += ind * strideL;
-        }
-        if (rsize != 1) {
-            rind += ind * strideR;
-        }
-    }
-
-    uint loffset = stride * lind + batch_ind;
-    uint roffset = stride * rind + batch_ind;
-    return uint2(loffset, roffset);
-}
 
 void _Add(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
     uint2 xx = GetIndices(x);
@@ -171,9 +74,42 @@ void _Subtract(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStruc
     o[x] = l[xx[0]] - r[xx[1]];
 }
 
+BUILD_AAA(Add, float, float, float)
+BUILD_AAA(Max, float, float, float)
+BUILD_AAA(Min, float, float, float)
+BUILD_AAA(Multiply, float, float, float)
+BUILD_AAA(Subtract, float, float, float)
 
-BUILD(Add)
-BUILD(Max)
-BUILD(Min)
-BUILD(Multiply)
-BUILD(Subtract)
+
+
+void _Equals(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] == r[xx[1]];
+}
+void _NotEquals(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] != r[xx[1]];
+}
+void _LessThan(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] < r[xx[1]];
+}
+void _LessThanOrEquals(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] <= r[xx[1]];
+}
+void _GreaterThan(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] > r[xx[1]];
+}
+void _GreaterThanOrEquals(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<bool> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] >= r[xx[1]];
+}
+
+BUILD_AAB(Equals, float, float, bool)
+BUILD_AAB(NotEquals, float, float, bool)
+BUILD_AAB(LessThan, float, float, bool)
+BUILD_AAB(LessThanOrEquals, float, float, bool)
+BUILD_AAB(GreaterThan, float, float, bool)
+BUILD_AAB(GreaterThanOrEquals, float, float, bool)

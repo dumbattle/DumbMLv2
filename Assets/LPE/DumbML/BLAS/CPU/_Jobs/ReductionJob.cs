@@ -31,11 +31,17 @@ namespace DumbML.BLAS.CPU {
                 this.src = src.buffer;
                 result = dest.buffer;
 
-                this.axis = new NativeArray<int>(axis, Allocator.TempJob);
                 srcShape = new NativeArray<int>(src.shape, Allocator.TempJob);
                 destShape = new NativeArray<int>(dest.shape, Allocator.TempJob);
 
-                axisLength = axis.Length;
+                if (axis != null) {
+                    this.axis = new NativeArray<int>(axis, Allocator.TempJob);
+                    axisLength = axis.Length;
+                }
+                else {
+                    this.axis = new NativeArray<int>(0, Allocator.TempJob);
+                    axisLength = -1;
+                }
                 srcRank = src.Rank();
                 srcSize = src.size;
                 destSize = dest.size;
@@ -105,6 +111,9 @@ namespace DumbML.BLAS.CPU {
             }
 
             bool AxisContain(int a) {
+                if (axisLength == -1) {
+                    return true;
+                }
                 for (int i = 0; i < axisLength; i++) {
                     var val = axis[i];
                     if (a == val) {

@@ -19,7 +19,8 @@ namespace DumbML.BLAS.GPU {
             public string selfInplace;
         }
   
-        static void Call(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output, Names names) {
+        static void Call<L, R, O>(GPUTensorBuffer<L> left, GPUTensorBuffer<R> right, GPUTensorBuffer<O> output, Names names)
+            where L : struct where R : struct where O : struct {
             PartitionInfo pi = CheckShape(left.shape, right.shape, output.shape);
             ComputeShader shader = Kernels.elementWiseBinary;
             shader.SetInt(Shader.PropertyToID("lrank"), left.Rank());
@@ -32,18 +33,18 @@ namespace DumbML.BLAS.GPU {
             shader.SetInts(Shader.PropertyToID("rshape"), right.shape);
             shader.SetInts(Shader.PropertyToID("oshape"), output.shape);
 
-            if (left == right) {
-                if (output == left) {
+            if (left.Equals( right)) {
+                if (output.Equals(left)) {
                     Call_SelfInplace(left, names.selfInplace);
                 }
                 else {
                     Call_Self(left, output, names.self);
                 }
             }
-            else if (output == left) {
+            else if (output.Equals(left)) {
                 Call_Inplace(left, right, names.inplaceL);
             }
-            else if (output == right) {
+            else if (output.Equals(right)) {
                 Call_Inplace(left, right, names.inplaceR);
             }
             else {
@@ -53,7 +54,8 @@ namespace DumbML.BLAS.GPU {
         }
        
         
-        static void Call_Normal(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output, string kernelName) {
+        static void Call_Normal<L, R, O>(GPUTensorBuffer<L> left, GPUTensorBuffer<R> right, GPUTensorBuffer<O> output, string kernelName)
+            where L : struct where R : struct where O : struct {
             ComputeShader shader = Kernels.elementWiseBinary;
 
             ComputeBuffer leftBuffer = left.buffer;
@@ -62,53 +64,80 @@ namespace DumbML.BLAS.GPU {
 
             int kernelID = shader.FindKernel(kernelName);
 
-            shader.SetBuffer(kernelID, Shader.PropertyToID("left"), leftBuffer);
-            shader.SetBuffer(kernelID, Shader.PropertyToID("right"), rightBuffer);
-            shader.SetBuffer(kernelID, Shader.PropertyToID("output"), outputBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetLeftName(typeof(L))), leftBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetRightName(typeof(R))), rightBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetOutputName(typeof(O))), outputBuffer);
             shader.SetInt(Shader.PropertyToID("count"), output.size);
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = output.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_Inplace(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, string kernelName) {
+        static void Call_Inplace<L, R>(GPUTensorBuffer<L> left, GPUTensorBuffer<R> right, string kernelName)
+            where L : struct where R : struct {
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
             ComputeBuffer rightBuffer = right.buffer;
 
             int kernelID = shader.FindKernel(kernelName);
 
-            shader.SetBuffer(kernelID, Shader.PropertyToID("left"), leftBuffer);
-            shader.SetBuffer(kernelID, Shader.PropertyToID("right"), rightBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetLeftName(typeof(L))), leftBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetRightName(typeof(R))), rightBuffer);
             shader.SetInt(Shader.PropertyToID("count"), left.size);
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = left.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_Self(FloatGPUTensorBuffer left, FloatGPUTensorBuffer output, string kernelName) {
+        static void Call_Self<L, O>(GPUTensorBuffer<L> left, GPUTensorBuffer<O> output, string kernelName)
+            where L : struct where O : struct {
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
             ComputeBuffer outputBuffer = output.buffer;
 
             int kernelID = shader.FindKernel(kernelName);
 
-            shader.SetBuffer(kernelID, Shader.PropertyToID("left"), leftBuffer);
-            shader.SetBuffer(kernelID, Shader.PropertyToID("output"), outputBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetLeftName(typeof(L))), leftBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetOutputName(typeof(O))), outputBuffer);
             shader.SetInt(Shader.PropertyToID("count"), output.size);
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = output.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
         }
-        static void Call_SelfInplace(FloatGPUTensorBuffer left, string kernelName) {
+        static void Call_SelfInplace<L>(GPUTensorBuffer<L> left, string kernelName)
+            where L : struct {
             ComputeShader shader = Kernels.elementWiseBinary;
             ComputeBuffer leftBuffer = left.buffer;
 
             int kernelID = shader.FindKernel(kernelName);
 
-            shader.SetBuffer(kernelID, Shader.PropertyToID("left"), leftBuffer);
+            shader.SetBuffer(kernelID, Shader.PropertyToID(GetLeftName(typeof(L))), leftBuffer);
             shader.SetInt(Shader.PropertyToID("count"), left.size);
             shader.GetKernelThreadGroupSizes(kernelID, out uint numThreads, out uint _, out uint _);
             int size = left.size + (int)numThreads - 1;
             shader.Dispatch(kernelID, size / (int)numThreads, 1, 1);
+        }
+
+        static string GetLeftName(Type t) {
+            if (t == typeof(float)) {
+                return "left_float";
+            }
+
+            return null;
+        }
+        static string GetRightName(Type t) {
+            if (t == typeof(float)) {
+                return "right_float";
+            }
+
+            return null;
+        }
+        static string GetOutputName(Type t) {
+            if (t == typeof(float)) {
+                return "output_float";
+            }
+            if (t==typeof(bool)) {
+                return "output_bool";
+            }
+            return null;
         }
 
 
@@ -256,6 +285,20 @@ namespace DumbML.BLAS.GPU {
             n.selfInplace = name1 + _SelfInplace;
 
             Call(left, right, output, n);
+        }
+
+        public static void Equals(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, BoolGPUTensorBuffer output) {
+            const string name1 = "Equals";
+
+            Names n;
+            n.normal = name1;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
+
+            Call(left, right, output, n);
+
         }
     }
 }

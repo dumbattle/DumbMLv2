@@ -51,7 +51,7 @@ namespace Tests.DumbMLTests {
             }
 
             void Run() {
-                m.Call(FloatTensor.FromArray(new[,] { { 1} }), FloatTensor.FromArray(new[,] { { 9 } }));
+                m.Call(FloatTensor.FromArray(new[,] { { 1 } }), FloatTensor.FromArray(new[,] { { 9 } }));
                 m.Backwards();
                 m.Call(FloatTensor.FromArray(new[,] { { 1 }, { 3 } }), FloatTensor.FromArray(new[,] { { 9 }, { 11 } })).ToTensors(outputTensor, lossTensor);
                 sb.Append($"Output: {outputTensor.data.ContentString()}\nLoss: {lossTensor.data.ContentString()}\n");
