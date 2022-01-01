@@ -16,6 +16,19 @@ namespace DumbML.BLAS.CPU {
                 result[index] = src[index];
             }
         }
+        public struct ReLU : IJobParallelFor {
+            NativeArray<float> src;
+            public NativeArray<float> result;
+
+            public ReLU(FloatCPUTensorBuffer src, FloatCPUTensorBuffer dest) {
+                this.src = src.buffer;
+                result = dest.buffer;
+            }
+            public void Execute(int index) {
+                var v = src[index];
+                result[index] = v > 0 ? v : 0;
+            }
+        }
         public struct Sqr : IJobParallelFor {
             NativeArray<float> src;
             public NativeArray<float> result;

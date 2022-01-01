@@ -65,16 +65,4 @@ namespace DumbML {
             return result;
         }
     }
-
-    //public class Reshape : Operation {
-    //    public Reshape(Operation op, params int[] shape) {
-    //        BuildOp(shape, op.dtype, op);
-    //    }
-
-
-    //    public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
-    //    }
-    //    public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-    //    }
-    //}
 }

@@ -13,6 +13,18 @@
                 }
                 throw new System.ArgumentException($"Expected float CPU tensor buffer\nGot{src.GetType()}");
             }
+            static BoolGPUTensorBuffer AsBoolGPU(ITensorBuffer src) {
+                if (src is BoolGPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected bool GPU tensor buffer\nGot{src.GetType()}");
+            }
+            static BoolCPUTensorBuffer AsBoolCPU(ITensorBuffer src) {
+                if (src is BoolCPUTensorBuffer result) {
+                    return result;
+                }
+                throw new System.ArgumentException($"Expected bool CPU tensor buffer\nGot{src.GetType()}");
+            }
             static IntGPUTensorBuffer AsIntGPU(ITensorBuffer src) {
                 if (src is IntGPUTensorBuffer result) {
                     return result;
@@ -59,6 +71,60 @@
                 }
             }
 
+            public static void Cast(ITensorBuffer a, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
+
+                if (deviceType == Device.gpu) {
+                    switch ((atype: a.dtype, desttype: dest.dtype)) {
+                        case (DType.Float, DType.Int):
+                            GPU.Cast.FloatToInt(AsFloatGPU(a), AsIntGPU(dest));
+                            return;
+                        case (DType.Int, DType.Float):
+                            GPU.Cast.IntToFloat(AsIntGPU(a), AsFloatGPU(dest));
+                            return;
+                        case (DType.Int, DType.Bool):
+                            GPU.Cast.IntToBool(AsIntGPU(a), AsBoolGPU(dest));
+                            return;
+                        case (DType.Bool, DType.Int):
+                            GPU.Cast.BoolToInt(AsBoolGPU(a), AsIntGPU(dest));
+                            return;
+                        case (DType.Bool, DType.Float):
+                            GPU.Cast.BoolToFloat(AsBoolGPU(a), AsFloatGPU(dest));
+                            return;
+                        case (DType.Float, DType.Bool):
+                            GPU.Cast.FloatToBool(AsFloatGPU(a), AsBoolGPU(dest));
+                            return;
+                        default:
+                            throw new System.NotImplementedException("Cannot cast");
+                    }
+
+                }
+                else {
+                    switch ((atype: a.dtype, desttype: dest.dtype)) {
+                        case (DType.Float, DType.Int):
+                            CPU.Cast.Run(AsFloatCPU(a), AsIntCPU(dest));
+                            return;
+                        case (DType.Int, DType.Float):
+                            CPU.Cast.Run(AsIntCPU(a), AsFloatCPU(dest));
+                            return;
+                        case (DType.Int, DType.Bool):
+                            CPU.Cast.Run(AsIntCPU(a), AsBoolCPU(dest));
+                            return;
+                        case (DType.Bool, DType.Int):
+                            CPU.Cast.Run(AsBoolCPU(a), AsIntCPU(dest));
+                            return;
+                        case (DType.Bool, DType.Float):
+                            CPU.Cast.Run(AsBoolCPU(a), AsFloatCPU(dest));
+                            return;
+                        case (DType.Float, DType.Bool):
+                            CPU.Cast.Run(AsFloatCPU(a), AsBoolCPU(dest));
+                            return;
+                        default:
+                            throw new System.NotImplementedException("Cannot cast");
+
+                    }
+                }
+            }
             public static void Copy(ITensorBuffer src, ITensorBuffer dest, bool ignoreShape = false) {
                 Device deviceType = AssertSameDeviceType(src, dest);
 
@@ -77,6 +143,16 @@
                 }
                 else {
                     CPU.SetValues.Zero(AsFloatCPU(buffer));
+                }
+            }
+            public static void ElementwiseEquals(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, b, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseBinary.Equals(AsFloatGPU(a), AsFloatGPU(b), AsBoolGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseBinary.Equals(AsFloatCPU(a), AsFloatCPU(b), AsBoolCPU(dest));
                 }
             }
             public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest, bool transA, bool transB) {
@@ -119,7 +195,16 @@
                     CPU.Reduction.Sum(AsFloatCPU(buffer), axis, AsFloatCPU(dest));
                 }
             }
+            public static void ReLU(ITensorBuffer a, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
 
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingle.ReLU(AsFloatGPU(a), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementWiseSingle.ReLU(AsFloatCPU(a), AsFloatCPU(dest));
+                }
+            }
             public static void SetTo0s(ITensorBuffer buffer) {
                 Device d = buffer.device;
 
