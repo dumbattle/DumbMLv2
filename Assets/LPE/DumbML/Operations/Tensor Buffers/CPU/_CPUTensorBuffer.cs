@@ -48,7 +48,7 @@ namespace DumbML {
 
         }
 
-        public void CopyFrom<U>(Tensor<U> src) {
+        public void CopyFrom(Tensor src) {
             if (src is Tensor<T> t) {
                 CopyFrom(t);
             }
@@ -57,7 +57,7 @@ namespace DumbML {
             }
         }
 
-        public void CopyTo<U>(Tensor<U> dest) {
+        public void CopyTo(Tensor dest) {
             if (dest is Tensor<T> t) {
                 CopyTo(t);
             }
@@ -89,6 +89,20 @@ namespace DumbML {
             buffer.Dispose();
             shape = null;
             size = -1;
+        }
+    
+        public static CPUTensorBuffer<T> Get(params int[] shape) {
+            if (typeof(T) == typeof(int)) {
+                return new IntCPUTensorBuffer(shape) as CPUTensorBuffer<T>;
+            }
+            if (typeof(T) == typeof(float)) {
+                return new FloatCPUTensorBuffer(shape) as CPUTensorBuffer<T>;
+            }
+            if (typeof(T) == typeof(bool)) {
+                return new BoolCPUTensorBuffer(shape) as CPUTensorBuffer<T>;
+            }
+
+            return null;
         }
     }
 }

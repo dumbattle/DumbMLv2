@@ -64,25 +64,36 @@ namespace DumbML {
         }
 
 
-        public void CopyFrom<U>(Tensor<U> src) {
-            if (src.dtype != dtype) {
+        public void CopyFrom(Tensor src) {
+            if (src is Tensor<T> t) {
+                CopyFrom(t);
+            }
+            else {
                 throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {src.dtype}\nDest: {dtype}");
             }
+        }
+
+        public void CopyTo(Tensor dest) {
+            if (dest is Tensor<T> t) {
+                CopyTo(t);
+            }
+            else {
+                throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {dtype}\nDest: {dest.dtype}");
+            }
+        }
+
+        protected void CopyFrom(Tensor<T> src) {
             SetShape(src.shape);
 
             buffer.SetData(src.data, 0, 0, size);
         }
 
-        public void CopyTo<U>(Tensor<U> dest) {
-            if (dest.dtype != dtype) {
-                throw new System.ArgumentException($"Invalid dtpyes:\nSrc: {dtype}\nDest: {dest.dtype}");
-            }
+        protected void CopyTo(Tensor<T> dest) {
             if (!ShapeUtility.SameShape(shape, dest.shape)) {
                 throw new System.ArgumentException($"Destination tensor does not have correct shape. Expected: {shape.ContentString()} Got: {dest.shape.ContentString()}");
             }
             buffer.GetData(dest.data, 0, 0, size);
         }
-       
         public void Dispose() {
             buffer.Dispose();
 

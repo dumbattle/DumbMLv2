@@ -41,7 +41,7 @@ namespace DumbML {
             }
 
             outputBuffers = Array.AsReadOnly((from x in outputNodes select x.outputBuffer).ToArray());
-
+      
             ModelNode BuildNode(Operation op) {
                 if (op2node.ContainsKey(op)) {
                     return op2node[op];
@@ -64,7 +64,7 @@ namespace DumbML {
             }
         }
 
-        public IReadOnlyList<ITensorBuffer> Call(params FloatTensor[] inputs) {
+        public IReadOnlyList<ITensorBuffer> Call(params Tensor[] inputs) {
             if (inputs.Length != inputNodes.Length) {
                 throw new ArgumentException($"Worng number of inputs received\n  Expected: {inputNodes.Length}\n  Got: {inputs.Length}");
             }

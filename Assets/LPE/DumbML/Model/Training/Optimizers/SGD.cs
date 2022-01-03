@@ -36,8 +36,7 @@ namespace DumbML {
             // update momentum
             BLAS.Engine.Compute.Add(t1, mBuf, mBuf);
             // update weight
-            BLAS.Engine.Compute.Subtract(variableBuffer, mBuf, t1);
-            BLAS.Engine.Compute.Copy(t1, variableBuffer);
+            BLAS.Engine.Compute.Subtract(variableBuffer, mBuf, variableBuffer);
         }
 
 

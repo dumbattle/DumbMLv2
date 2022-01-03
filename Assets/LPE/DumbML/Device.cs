@@ -3,5 +3,8 @@
         cpu,
         gpu
     }
+
+    namespace NN {
+    }
 }
 

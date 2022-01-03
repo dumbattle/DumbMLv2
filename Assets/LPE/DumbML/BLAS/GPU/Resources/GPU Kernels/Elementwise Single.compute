@@ -5,8 +5,8 @@
 #pragma kernel Copy_Inplace
 
 #pragma kernel Exp
-
 #pragma kernel Exp_Inplace
+
 #pragma kernel Log
 #pragma kernel Log_Inplace
 

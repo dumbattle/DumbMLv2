@@ -155,6 +155,16 @@
                     CPU.ElementwiseBinary.Equals(AsFloatCPU(a), AsFloatCPU(b), AsBoolCPU(dest));
                 }
             }
+            public static void Exp(ITensorBuffer a, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingle.Exp(AsFloatGPU(a), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementWiseSingle.Exp(AsFloatCPU(a), AsFloatCPU(dest));
+                }
+            }
             public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest, bool transA, bool transB) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 

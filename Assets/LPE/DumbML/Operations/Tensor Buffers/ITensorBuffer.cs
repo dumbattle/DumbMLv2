@@ -11,7 +11,7 @@ namespace DumbML {
 
         void SetShape(int[] shape);
 
-        void CopyFrom<T>(Tensor<T> t);
-        void CopyTo<T>(Tensor<T> t);
+        void CopyFrom(Tensor t);
+        void CopyTo(Tensor t);
     }
 }

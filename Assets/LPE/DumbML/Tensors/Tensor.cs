@@ -2,9 +2,13 @@
 
 
 namespace DumbML {
-    public abstract class Tensor<T> {
-        #region Indexers
-        public T this[params int[] index] {
+    public abstract class Tensor {
+        public abstract DType dtype { get; }
+        public int[] shape { get; protected set; }
+    }
+    public abstract class Tensor<T> : Tensor {
+            #region Indexers
+            public T this[params int[] index] {
             get {
                 this.CheckIndex(index);
                 int i = this.GetIndex(index);
@@ -72,8 +76,6 @@ namespace DumbML {
         #endregion Indexers
 
         public T[] data { get; private set; }
-        public abstract DType dtype { get; }
-        public int[] shape { get; private set; }
         public int size => data.Length;
 
         public Tensor(params int[] shape) {
@@ -86,6 +88,20 @@ namespace DumbML {
             }
 
             data = new T[size];
+        }
+
+        public static Tensor<T> Get(params int[] shape) {
+            if (typeof(T) == typeof(int)) {
+                return new IntTensor(shape) as Tensor<T>;
+            }
+            if (typeof(T) == typeof(float)) {
+                return new FloatTensor(shape) as Tensor<T>;
+            }
+            if (typeof(T) == typeof(bool)) {
+                return new BoolTensor(shape) as Tensor<T>;
+            }
+
+            return null;
         }
     }
 }
