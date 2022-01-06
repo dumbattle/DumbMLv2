@@ -28,6 +28,18 @@ namespace DumbML.BLAS.CPU {
                 result[index] = UnityEngine.Mathf.Exp(src[index]);
             }
         }
+        public struct Log : IJobParallelFor {
+            NativeArray<float> src;
+            public NativeArray<float> result;
+
+            public Log(FloatCPUTensorBuffer src, FloatCPUTensorBuffer dest) {
+                this.src = src.buffer;
+                result = dest.buffer;
+            }
+            public void Execute(int index) {
+                result[index] = UnityEngine.Mathf.Log(src[index]);
+            }
+        }
         public struct ReLU : IJobParallelFor {
             NativeArray<float> src;
             public NativeArray<float> result;

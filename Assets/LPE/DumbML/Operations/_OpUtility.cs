@@ -35,6 +35,13 @@ namespace DumbML {
                 else if (bsize == 1) {
                     dimSize = asize;
                 }
+                // negative we assume the dimesion will be correct or 1
+                else if (asize < 0) {
+                    dimSize = bsize;
+                }
+                else if (bsize < 0) {
+                    dimSize = asize;
+                }
                 // not compatable
                 else {
                     throw new InvalidOperationException(

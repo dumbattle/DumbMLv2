@@ -62,10 +62,10 @@ namespace DumbML {
         }
     }
 
-    public class Sigmoid : Operation {
-        public Sigmoid(Operation op) {
+    //public class Sigmoid : Operation {
+    //    public Sigmoid(Operation op) {
 
-        }
-    }
+    //    }
+    //}
 
 }

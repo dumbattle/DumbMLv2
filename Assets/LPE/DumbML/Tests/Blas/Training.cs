@@ -136,8 +136,10 @@ namespace Tests.DumbMLTests {
 
         [UnityTest]
         public IEnumerator Regression() {
+
+            DumbML.BLAS.Engine.GPUEnabled = true;
             int itemSize = 16;
-            int labelSize = 5;
+            int labelSize = itemSize;
 
             int batchSize = 32;
             int hiddenSize = 64;
@@ -152,16 +154,17 @@ namespace Tests.DumbMLTests {
 
                 for (int j = 0; j < d.size; j++) {
                     d.data[j] = UnityEngine.Random.value;
+                    l.data[j] = d.data[j] * 1.1f + 1;
                 }
-                for (int j = 0; j < l.size; j++) {
-                    l.data[j] = UnityEngine.Random.value;
-                }
+                //for (int j = 0; j < l.size; j++) {
+                //    l.data[j] = UnityEngine.Random.value;
+                //}
 
                 data[i] = d;
                 labels[i] = l;
             }
 
-            InputOp input = new InputOp(batchSize, itemSize);
+            InputOp input = new InputOp(-batchSize, itemSize);
             Operation h1 = new FullyConnected(hiddenSize, Activation.ReLU).Build(input);
             Operation h2 = new FullyConnected(hiddenSize, Activation.ReLU).Build(h1);
             Operation outputOp = new FullyConnected(labelSize, Activation.None).Build(h2);
@@ -183,7 +186,6 @@ namespace Tests.DumbMLTests {
                 var dl = data.Zip(labels, (d, l) => (d, l)).ToArray();
                 dl.Shuffle();
                 float l = 0;
-
                 for (int start = 0; start < dataCount - batchSize; start += batchSize) {
                     yield return null;
                     inputBuilder.Begin(inputTensor);
@@ -199,7 +201,7 @@ namespace Tests.DumbMLTests {
                     m.Backwards();
                     l += lossTensor[0];
                 }
-                Debug.Log(l);
+                Debug.Log(l/ dl.Length);
 
             }
 

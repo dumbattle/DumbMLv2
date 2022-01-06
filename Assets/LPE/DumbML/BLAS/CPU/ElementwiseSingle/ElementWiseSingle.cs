@@ -20,6 +20,14 @@ namespace DumbML.BLAS.CPU {
             var h = j.Schedule(input.size, 64);
             h.Complete();
         }
+        public static void Log(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest, bool ignoreShape = false) {
+            if (!ignoreShape && !ShapeUtility.SameShape(input.shape, dest.shape)) {
+                throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
+            }
+            var j = new ElementWiseSingleJobs.Log(input, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+        }
         public static void ReLU(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest) {
             if (!ShapeUtility.SameShape(input.shape, dest.shape)) {
                 throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
