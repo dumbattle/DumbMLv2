@@ -30,7 +30,7 @@ namespace DumbML {
 
 
         public void SetShape(int[] shape) {
-            if (shape.Length > this.shape.Length) {
+            if (shape.Length != this.shape.Length) {
                 this.shape = new int[shape.Length];
             }
 

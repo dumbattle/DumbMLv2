@@ -20,7 +20,9 @@ namespace Tests.BLAS {
                 DumbML.BLAS.GPU.Reduction.Sum(input, axis, output);
                 output.CopyTo(ot);
 
-                CollectionAssert.AreEqual(et.data, ot.data);
+                for (int i = 0; i < et.size; i++) {
+                    Assert.True(Mathf.Approximately(et.data[i], ot.data[i]), $"{et.data[i]} - {ot.data[i]}");
+                }
                 input.Dispose();
                 output.Dispose();
             }
@@ -118,6 +120,37 @@ namespace Tests.BLAS {
 
                 int[] reduction = null;
                 float[] e = { 378 };
+
+                Run(a, reduction, e);
+            }
+            [Test]
+            public void Sum9() {
+                float[,,] a = new float[5, 5, 4]; 
+                float sum = 0;
+
+                for (int x = 0; x < a.GetLength(0); x++) {
+                    for (int y = 0; y < a.GetLength(1); y++) {
+                        for (int z = 0; z < a.GetLength(2); z++) {
+                            a[x, y, z] = UnityEngine.Random.value;
+                            sum += a[x, y, z];
+                        }
+                    }
+                }
+                int[] reduction = { 0, 1, 2};
+                float[] e = { sum };
+
+                Run(a, reduction, e);
+            }
+            [Test]
+            public void Sum10() {
+                float[] a = new float[98]; // 96 works, 97 doesn't
+                float[] e = new float[1];
+
+                for (int x = 0; x < a.GetLength(0); x++) {
+                            a[x] = UnityEngine.Random.value;
+                            e[0] += a[x];
+                }
+                int[] reduction = { 1 };
 
                 Run(a, reduction, e);
             }

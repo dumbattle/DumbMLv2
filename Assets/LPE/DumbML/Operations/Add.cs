@@ -8,7 +8,7 @@ namespace DumbML {
 
         public Add(Operation a, Operation b) {
             shapeActual = OpUtility.GetBroadcastShape(a.shape, b.shape, shapeActual);
-            BuildOp(a.shape, DType.Float, a, b);
+            BuildOp(shapeActual, DType.Float, a, b);
         }
 
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {

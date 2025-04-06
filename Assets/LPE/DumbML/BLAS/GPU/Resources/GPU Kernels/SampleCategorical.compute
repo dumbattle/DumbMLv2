@@ -1,0 +1,37 @@
+#pragma kernel SampleCategorical
+
+
+RWStructuredBuffer<float> input;
+RWStructuredBuffer<int> output;
+
+uint count;
+uint stride;
+float seed;
+
+#include "includes/random.cginc"
+
+[numthreads(64, 1, 1)]
+void SampleCategorical(uint3 id : SV_DispatchThreadID) {
+    if (id.x > count) {
+        return;
+    }
+
+    float rand = rand01(float2(seed, id.x * .234198f));
+    int result = 0;
+
+    for (uint i = 0; i < stride; i++) {
+        //bool foundValue = rand <= 0;
+
+        rand -= input[id.x * stride + i];
+        if (rand <= 0) {
+            result = i;
+            break;
+        }
+
+        //result = i * (rand <= 0) * (1 - foundValue) + result * (foundValue);
+    }
+
+    output[id.x] = result;
+}
+
+

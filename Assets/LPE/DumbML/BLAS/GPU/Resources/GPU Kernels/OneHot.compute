@@ -1,0 +1,38 @@
+#pragma kernel OneHot
+
+
+RWStructuredBuffer<int> inds;
+RWStructuredBuffer<float> output;
+
+uint depth;
+float onval;
+float offval;
+
+// output size
+int count;
+
+
+
+[numthreads(64, 1, 1)]
+void OneHot(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+
+    int srcInd = id.x / depth;
+    int ind = id.x % depth;
+
+    int target = inds[srcInd];
+
+    float v;
+
+    if (ind == target) {
+        v = onval;
+    }
+    else {
+        v = offval;
+    }
+
+    output[id.x] = v;
+}
+

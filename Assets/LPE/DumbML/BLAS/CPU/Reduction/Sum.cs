@@ -7,7 +7,9 @@
 
         struct SumReducer : ReductionJob.IImplementation {
             float result;
-
+            public void Start() {
+                result = 0;
+            }
             public void Next(float v) {
                 result += v;
             }

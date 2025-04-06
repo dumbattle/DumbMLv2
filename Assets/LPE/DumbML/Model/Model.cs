@@ -10,10 +10,11 @@ namespace DumbML {
         List<ModelNode> allNodes;
         IReadOnlyList<ITensorBuffer> outputBuffers;
 
-        Gradients gradients;
+        public Gradients gradients;
         Optimizer optimizer;
 
         Model backwardsModel;
+
         public Model(InputOp[] inputs, Operation[] outputs) {
             Dictionary<Operation, ModelNode> op2node = new Dictionary<Operation, ModelNode>();
             Stack<Operation> opStack = new Stack<Operation>();
@@ -27,10 +28,8 @@ namespace DumbML {
                 }
             }
 
-
             outputNodes = new ModelNode[outputs.Length];
             inputNodes = new ModelNode[inputs.Length];
-
 
             for (int i = 0; i < outputs.Length; i++) {
                 outputNodes[i] = op2node[outputs[i]];
@@ -63,8 +62,16 @@ namespace DumbML {
                 return op2node[op];
             }
         }
+        public Model(InputOp input, Operation[] outputs) : this(new[] { input }, outputs ){ }
+        public Model(InputOp[] inputs, Operation output) : this(inputs, new[] { output }){ }
+        public Model(InputOp input, Operation output) : this(new[] { input }, new[] { output }){ }
+
+        //*********************************************************************************************************
+        // Control
+        //*********************************************************************************************************
 
         public IReadOnlyList<ITensorBuffer> Call(params Tensor[] inputs) {
+
             if (inputs.Length != inputNodes.Length) {
                 throw new ArgumentException($"Worng number of inputs received\n  Expected: {inputNodes.Length}\n  Got: {inputs.Length}");
             }
@@ -76,7 +83,8 @@ namespace DumbML {
             }
 
             // call each node
-            foreach (var n in allNodes) {
+            for (int i = 0; i < allNodes.Count; i++) {
+                ModelNode n = allNodes[i];
                 n.Forward();
             }
             return outputBuffers;
@@ -89,14 +97,13 @@ namespace DumbML {
                 var g = grads[i];
                 var k = gradients.keys[i];
                 BLAS.Engine.Compute.Add(gradients[k], g, gradients[k]);
-
             }
             optimizer.Update();
         }
 
-        public void CreateBackwardsModel(Operation[] grads, Operation[] wrt) {
+        public Model CreateBackwardsModel(Operation[] grads, Operation[] wrt) {
             // outputs of all forward nodes
-            Dictionary<Operation, Operation> src = allNodes.ToDictionary(x => x.op, x => (Operation)new BufferOp(x.outputBuffer));
+            Dictionary<Operation, Operation> src = allNodes.ToDictionary(x => x.op, x => (Operation)new BufferOp(x.outputBuffer, x.op));
 
             // errors of all forward nodes
             Dictionary<Operation, Operation> errors = allNodes.ToDictionary(x => x.op, x => (Operation)null);
@@ -143,7 +150,7 @@ namespace DumbML {
                 }
             }
             Operation[] outputOps = (from x in grads select errors[x]).ToArray();
-            backwardsModel = new Model(new InputOp[0], outputOps);
+            return new Model(new InputOp[0], outputOps);
         }
 
         public void InitTraining(Optimizer o, params Operation[] loss) {
@@ -158,15 +165,17 @@ namespace DumbML {
                 o.InitializeGradients(g);
             }
 
-
             optimizer = o;
             gradients = o.grad;
-            CreateBackwardsModel(o.grad.keys, loss);
+            backwardsModel = CreateBackwardsModel(o.grad.keys, loss);
         }
 
-        public void Dispose() {
+        public void Dispose(bool disposeVariables = false) {
             foreach (var n in allNodes) {
                 n.Dispose();
+                if (disposeVariables && n.op is Variable v) {
+                    v.buffer.Dispose();
+                }
             }
 
             gradients?.Dispose();
@@ -179,11 +188,67 @@ namespace DumbML {
             optimizer = null;
         }
 
+
+        //*********************************************************************************************************
+        // Utility
+        //*********************************************************************************************************
+
+
+        public List<T> GetOperations<T>() where T : Operation {
+            List<T> result = new List<T>();
+            foreach (var node in allNodes) {
+                if (node.op is T t) {
+                    result.Add(t);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Allocates Memory
+        /// </summary>
+        public List<int[]> GetInputShapes() {
+            List<int[]> result = new List<int[]>();
+
+            for (int i = 0; i < inputNodes.Length; i++) {
+                result.Add((int[])inputNodes[i].op.shape.Clone());
+            }
+            return result;
+        }
+        /// <summary>
+        /// Allocates Memory
+        /// </summary>
+        public List<int[]> GetOutputShapes() {
+            List<int[]> result = new List<int[]>();
+
+            for (int i = 0; i < outputNodes.Length; i++) {
+                result.Add((int[])outputNodes[i].op.shape.Clone());
+            }
+            return result;
+        }
+        
+        public Operation[] GetOutputOps() {
+            Operation[] result = new Operation[outputNodes.Length];
+
+            for (int i = 0; i < outputNodes.Length; i++) {
+                result[i] = outputNodes[i].op;
+            }
+            return result;
+        }
+        public InputOp[] GetInputOps() {
+            InputOp[] result = new InputOp[outputNodes.Length];
+
+            for (int i = 0; i < inputNodes.Length; i++) {
+                result[i] = (InputOp)inputNodes[i].op;
+            }
+            return result;
+        }
         class BufferOp : Operation {
             ITensorBuffer buffer; // not owner of this buffer, so no need to dispose
-
-            public BufferOp(ITensorBuffer buffer) {
+            Operation op;
+            public BufferOp(ITensorBuffer buffer, Operation op) {
                 this.buffer = buffer;
+                this.op = op;
                 BuildOp(buffer.shape, buffer.dtype);
             }
 
@@ -191,7 +256,7 @@ namespace DumbML {
                 result.SetShape(buffer.shape);
                 BLAS.Engine.Compute.Copy(buffer, result);
             }
-        
+
             public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
                 return new Operation[] {
                     new Multiply(error, inputs[1]),
@@ -200,5 +265,7 @@ namespace DumbML {
             }
 
         }
+
+
     }
 }

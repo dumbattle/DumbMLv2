@@ -40,5 +40,14 @@ namespace DumbML {
             if (c != null) buffers[2].CopyTo(c);
             if (d != null) buffers[3].CopyTo(d);
         }
+        public static void ToTensors(this IReadOnlyList<ITensorBuffer> buffers, params Tensor[] t) {
+            for (int i = 0; i < t.Length; i++) {
+                if (i == buffers.Count) {
+                    return;
+                }
+                if (t[i] != null) buffers[i].CopyTo(t[i]);
+
+            }
+        }
     }
 }

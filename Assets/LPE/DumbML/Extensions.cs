@@ -89,6 +89,9 @@ namespace DumbML {
         }
 
         public static string ContentString<T>(this T[] t) {
+            if (t.Length == 0) {
+                return "[ ]";
+            }
             StringBuilder sb = new StringBuilder();
 
             sb.Append("[");

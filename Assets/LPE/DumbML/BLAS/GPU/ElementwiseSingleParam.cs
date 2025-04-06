@@ -54,5 +54,18 @@ namespace DumbML.BLAS.GPU {
 
             Call(input, output, name, inplace, v);
         }
+        
+        public static void Max(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, float v) {
+            const string name = "Max";
+            const string inplace = name + "_Inplace";
+
+            Call(input, output, name, inplace, v);
+        }
+        public static void Min(FloatGPUTensorBuffer input, FloatGPUTensorBuffer output, float v) {
+            const string name = "Min";
+            const string inplace = name + "_Inplace";
+
+            Call(input, output, name, inplace, v);
+        }
     }
 }

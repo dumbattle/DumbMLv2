@@ -16,6 +16,9 @@ namespace DumbML {
         }
 
         public static void CheckIndex<T>(this Tensor<T> t, int a) {
+            if (t.shape.Length == 0 && a == 0) {
+                return;
+            }
             if (1 != t.shape.Length) {
                 throw new ArgumentException($"Index has invalid number of parameters. Got {1} Expected {t.shape.Length}");
             }

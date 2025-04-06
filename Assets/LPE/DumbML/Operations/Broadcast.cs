@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 
 namespace DumbML {
@@ -22,7 +23,16 @@ namespace DumbML {
             }
             else {
                 result.SetShape(inputs[1].shape);
-                BLAS.Engine.Compute.Broadcast(inputs[0], inputs[1].shape, result);
+                try {
+                    BLAS.Engine.Compute.Broadcast(inputs[0], inputs[1].shape, result);
+                }
+                catch (System.Exception) {
+                    Debug.Log(id);
+                    Debug.Log(inputs[0].shape.ContentString());
+                    Debug.Log(inputs[1].shape.ContentString());
+                    Debug.Log(result.shape.ContentString());
+                    throw;
+                }
             }
         }
 
@@ -46,26 +56,4 @@ namespace DumbML {
             };
         }
     }
-
-    public class Exp : Operation {
-        public Exp(Operation op) {
-            BuildOp(op.shape, op.dtype, op);
-        }
-        public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
-            result.SetShape(inputs[0].shape);
-            BLAS.Engine.Compute.Exp(inputs[0], result);
-        }
-        public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-            return new[] {
-                output
-            };
-        }
-    }
-
-    //public class Sigmoid : Operation {
-    //    public Sigmoid(Operation op) {
-
-    //    }
-    //}
-
 }

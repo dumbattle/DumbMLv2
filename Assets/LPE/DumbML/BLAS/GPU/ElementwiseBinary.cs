@@ -63,7 +63,6 @@ namespace DumbML.BLAS.GPU {
             ComputeBuffer outputBuffer = output.buffer;
 
             int kernelID = shader.FindKernel(kernelName);
-
             shader.SetBuffer(kernelID, Shader.PropertyToID(GetLeftName(typeof(L))), leftBuffer);
             shader.SetBuffer(kernelID, Shader.PropertyToID(GetRightName(typeof(R))), rightBuffer);
             shader.SetBuffer(kernelID, Shader.PropertyToID(GetOutputName(typeof(O))), outputBuffer);
@@ -228,6 +227,18 @@ namespace DumbML.BLAS.GPU {
 
         public static void Add(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
             const string name1 = "Add";
+
+            Names n;
+            n.normal = name1;
+            n.inplaceL = name1 + _InplaceL;
+            n.inplaceR = name1 + _InplaceR;
+            n.self = name1 + _Self;
+            n.selfInplace = name1 + _SelfInplace;
+
+            Call(left, right, output, n);
+        }
+        public static void Divide(FloatGPUTensorBuffer left, FloatGPUTensorBuffer right, FloatGPUTensorBuffer output) {
+            const string name1 = "Divide";
 
             Names n;
             n.normal = name1;

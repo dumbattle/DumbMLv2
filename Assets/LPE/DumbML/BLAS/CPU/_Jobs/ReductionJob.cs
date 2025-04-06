@@ -5,6 +5,7 @@ using Unity.Collections;
 namespace DumbML.BLAS.CPU {
     public static class ReductionJob {
         public interface IImplementation {
+            void Start();
             void Next(float v);
             float Complete();
         }
@@ -46,9 +47,10 @@ namespace DumbML.BLAS.CPU {
                 srcSize = src.size;
                 destSize = dest.size;
             }
-            
+
             public void Execute(int index) {
                 T reducer = default;
+                reducer.Start();
                 int reductionSize = srcSize / destSize; // number of input elements per output element
                 // get starting index
                 int ind = index;
@@ -111,6 +113,9 @@ namespace DumbML.BLAS.CPU {
             }
 
             bool AxisContain(int a) {
+                if (axisLength == 0) {
+                    return true;
+                }
                 if (axisLength == -1) {
                     return true;
                 }

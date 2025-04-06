@@ -4,6 +4,12 @@
 #pragma kernel Add_Self
 #pragma kernel Add_SelfInplace
 
+#pragma kernel Divide
+#pragma kernel Divide_InplaceL
+#pragma kernel Divide_InplaceR
+#pragma kernel Divide_Self
+#pragma kernel Divide_SelfInplace
+
 #pragma kernel Max
 #pragma kernel Max_InplaceL
 #pragma kernel Max_InplaceR
@@ -49,9 +55,14 @@
 #include "includes/ElementwiseBinaryBuilds.cginc"
 
 
+
 void _Add(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
     uint2 xx = GetIndices(x);
     o[x] = l[xx[0]] + r[xx[1]];
+}
+void _Divide(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
+    uint2 xx = GetIndices(x);
+    o[x] = l[xx[0]] / (r[xx[1]]);
 }
 void _Max(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStructuredBuffer<float> o, uint x) {
     uint2 xx = GetIndices(x);
@@ -75,6 +86,7 @@ void _Subtract(RWStructuredBuffer<float> l, RWStructuredBuffer<float> r, RWStruc
 }
 
 BUILD_AAA(Add, float, float, float)
+BUILD_AAA(Divide, float, float, float)
 BUILD_AAA(Max, float, float, float)
 BUILD_AAA(Min, float, float, float)
 BUILD_AAA(Multiply, float, float, float)

@@ -1,14 +1,34 @@
 ﻿using System.Collections.Generic;
-
+using System.Text;
+using System;
 
 namespace DumbML {
+
+
     public abstract class Tensor {
         public abstract DType dtype { get; }
         public int[] shape { get; protected set; }
+        public int rank => shape.Length;
+
+        public abstract void CopyFrom(Tensor src, bool ignoreShape = false);
+
+        public static Tensor Get(DType type, params int[] shape) {
+            if (type == DType.Int) {
+                return new IntTensor(shape);
+            }
+            if (type == DType.Float) {
+                return new FloatTensor(shape);
+            }
+            if (type == DType.Bool) {
+                return new BoolTensor(shape);
+            }
+
+            return null;
+        }
     }
     public abstract class Tensor<T> : Tensor {
-            #region Indexers
-            public T this[params int[] index] {
+        #region Indexers
+        public T this[params int[] index] {
             get {
                 this.CheckIndex(index);
                 int i = this.GetIndex(index);
@@ -102,6 +122,90 @@ namespace DumbML {
             }
 
             return null;
+        }
+
+        public override void CopyFrom(Tensor src, bool ignoreShape = false) {
+            if (!ignoreShape) {
+                if (!ShapeUtility.SameShape(shape, src.shape)) {
+                    throw new ArgumentException(
+                        $"Can't copy tensors with different shapes." +
+                        $"\nSource: {src.shape.ContentString()}" +
+                        $"\nDestination: {shape.ContentString()}");
+                }
+            }
+
+            if (src is Tensor<T> tt) {
+                Array.Copy(tt.data, data, data.Length);
+            }
+        }
+      
+        public override string ToString() {
+            var result = new StringBuilder();
+
+            result.Append($"{GetType().Name}");
+
+            // shape
+            result.Append($" (");
+
+            for (int i = 0; i < rank; i++) {
+                result.Append($"{shape[i]}");
+
+                if (i != rank - 1) {
+                    result.Append($", ");
+                }
+            }
+
+            result.Append($")\n");
+            string indent = "";
+
+            // data
+            for (int i = 0; i < size; i++) {
+                int stride = 1;
+                foreach (var d in shape) {
+                    stride *= d;
+                }
+
+                for (int d = 0; d < rank; d++) {
+                    if (i % stride == 0) {
+                        result.Append("[");
+                        if (d != rank - 1) {
+                            indent += " ";
+                        }
+                    }
+                  
+                    stride /= shape[d];
+                }
+
+                result.Append(data[i].ToString(/*"N2"*/));
+
+                bool brace = false;
+                stride = 1;
+
+                for (int d = rank - 1; d >= 0; d--) {
+                    stride *= shape[d];
+                    if ((i + 1) % stride == 0) {
+                        result.Append("]");
+                        if (d != rank - 1) {
+                            indent = indent.Substring(0, indent.Length - 1);
+                        }
+                        else {
+                        }
+
+                        brace = true;
+                    }
+                    else {
+                        break;
+                    }
+                }
+              
+                if (!brace) {
+                    result.Append(", ");
+                }
+                else {
+                    result.Append("\n" + indent);
+                }
+            }
+            return result.ToString();
         }
     }
 }

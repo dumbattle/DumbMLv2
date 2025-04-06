@@ -54,10 +54,12 @@ namespace DumbML {
                 bgrad = new MatrixMult(error, inputs[0], true, true);
             }
             var (a, b) = GetGradientReduction(inputs[0].shape, inputs[1].shape, error.shape);
+            var aa = a.Length > 0 ? new Reshape(new ReduceSum(agrad, inputs[0]), inputs[0]) : agrad;
+            var bb = b.Length > 0 ? new Reshape(new ReduceSum(bgrad, inputs[1]), inputs[1]) : bgrad;
 
             return new Operation[] { 
-                a.Length > 0 ? new Reshape(new ReduceSum(agrad, inputs[0]), inputs[0]) : agrad,
-                b.Length > 0 ? new Reshape(new ReduceSum(bgrad, inputs[1]), inputs[1]) : bgrad
+                aa,
+                bb
             };
         }
         static (int[], int[]) GetGradientReduction(int[] ashape, int[] bshape, int[] eshape) {
@@ -90,7 +92,7 @@ namespace DumbML {
 
             return (a.ToArray(), b.ToArray());
         }
-        static int[] GetShape(int[] left, int[] right, int[] result = null, bool transposeL = false, bool transposeR = false) {
+        int[] GetShape(int[] left, int[] right, int[] result = null, bool transposeL = false, bool transposeR = false) {
             int ldims = left.Length;
             int rdims = right.Length;
             int ddims = Mathf.Max(ldims, rdims);
@@ -104,7 +106,7 @@ namespace DumbML {
                 throw new ArgumentException($"MatrixMult requires tensors to have dimension of at least 2. Got shape: {right.ContentString()}");
             }
             if (result.Length != ddims) {
-                throw new ArgumentException($"MM");
+                throw new ArgumentException($"MM({id}) - {left.ContentString()} - {right.ContentString()} - {result.ContentString()}");
             }
 
 
@@ -154,7 +156,7 @@ namespace DumbML {
             int ry = right[rdims - (transposeR ? 2 : 1)];
 
             if (ly != rx) {
-                throw new InvalidOperationException($"Tensors do not have compatible dimensions: {left.ContentString()}, {right.ContentString()}");
+                throw new InvalidOperationException($"MM({id}) - Tensors do not have compatible inner dimensions: {left.ContentString()}, {right.ContentString()}");
             }
             result[ddims - 2] = lx;
             result[ddims - 1] = ry;

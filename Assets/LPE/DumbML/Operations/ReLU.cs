@@ -5,6 +5,7 @@
         }
 
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+            result.SetShape(inputs[0].shape);
             BLAS.Engine.Compute.ReLU(inputs[0], result);
         }
 

@@ -102,6 +102,53 @@ namespace Tests.BLAS.CPU {
 
             Run(a, reduction, e);
         }
+        [Test]
+        public void Sum8() {
+            float[,,] a =
+                { { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } },
+                  { { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 } },
+                  { { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 } } };
 
+            int[] reduction = null;
+            float[] e = { 378 };
+
+            Run(a, reduction, e);
+        }
+
+        [Test]
+        public void Sum9() {
+            float[,,] a = new float[5, 5, 4];
+            float sum = 0;
+
+            for (int x = 0; x < a.GetLength(0); x++) {
+                for (int y = 0; y < a.GetLength(1); y++) {
+                    for (int z = 0; z < a.GetLength(2); z++) {
+                        a[x, y, z] = UnityEngine.Random.value;
+                        sum += a[x, y, z];
+                    }
+                }
+            }
+            int[] reduction = { 0, 1, 2 };
+            float[] e = { sum };
+
+            Run(a, reduction, e);
+        }
+        [Test]
+        public void Sum10() {
+            float[,,] a = new float[4, 18, 18];
+            float[,] e = new float[a.GetLength(0), a.GetLength(2)];
+
+            for (int x = 0; x < a.GetLength(0); x++) {
+                for (int y = 0; y < a.GetLength(1); y++) {
+                    for (int z = 0; z < a.GetLength(2); z++) {
+                        a[x, y, z] = UnityEngine.Random.value;
+                        e[x, z] += a[x, y, z];
+                    }
+                }
+            }
+            int[] reduction = { 1 };
+
+            Run(a, reduction, e);
+        }
     }
 }

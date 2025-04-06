@@ -72,6 +72,22 @@ namespace Tests.BLAS {
                         DumbML.BLAS.CPU.ElementwiseBinary.Subtract(l, r, o);
                     }
                 );
+            }  
+            [Test]
+            public static void Min() {
+                Run((l, r, o) => DumbML.BLAS.GPU.ElementwiseBinary.Min(l, r, o),
+                    (l, r, o) => {
+                        DumbML.BLAS.CPU.ElementwiseBinary.Min(l, r, o);
+                    }
+                );
+            }  
+            [Test]
+            public static void Max() {
+                Run((l, r, o) => DumbML.BLAS.GPU.ElementwiseBinary.Max(l, r, o),
+                    (l, r, o) => {
+                        DumbML.BLAS.CPU.ElementwiseBinary.Max(l, r, o);
+                    }
+                );
             }
         }
     }

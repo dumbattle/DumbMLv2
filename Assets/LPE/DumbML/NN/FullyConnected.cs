@@ -17,7 +17,7 @@
         public Operation Build(Operation input) {
             if (weight == null) {
                 weight = new Variable(input.shape[input.shape.Length - 1], outputSize);
-                weight.InitValue(() => UnityEngine.Random.Range(-.1f, .1f));
+                weight.InitValue(() => UnityEngine.Random.Range(-.001f, .001f));
                 if (useBias) {
                     bias = new Variable(outputSize);
                 }
@@ -27,10 +27,12 @@
                     throw new System.ArgumentException($"Input tensor does not have compatible shape");
                 }
             }
-            var mm = new MatrixMult(input, weight);
-            var ac = activation.Build(mm);
-            var b = new Add(ac, bias);
-            return b;
+            Operation x = new MatrixMult(input, weight);
+            if (useBias) {
+                x = x + bias;
+            }
+            x = activation.Build(x);
+            return x;
         }
     }
 }

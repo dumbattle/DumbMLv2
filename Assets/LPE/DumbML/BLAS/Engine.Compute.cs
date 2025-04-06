@@ -60,6 +60,7 @@
                     CPU.ElementwiseBinary.Add(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
+           
             public static void Broadcast(ITensorBuffer buffer, int[] targetShape, ITensorBuffer dest) {
                 Device d = buffer.device;
 
@@ -132,7 +133,7 @@
                     GPU.ElementwiseSingle.Copy(AsFloatGPU(src), AsFloatGPU(dest), ignoreShape);
                 }
                 else {
-                    CPU.ElementWiseSingle.Copy(AsFloatCPU(src), AsFloatCPU(dest), ignoreShape);
+                    CPU.ElementwiseSingle.Copy(AsFloatCPU(src), AsFloatCPU(dest), ignoreShape);
                 }
             }
             public static void Clear(ITensorBuffer buffer) {
@@ -145,6 +146,18 @@
                     CPU.SetValues.Zero(AsFloatCPU(buffer));
                 }
             }
+           
+            public static void Divide(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, b, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseBinary.Divide(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseBinary.Divide(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
+                }
+            }
+           
             public static void ElementwiseEquals(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
@@ -162,9 +175,21 @@
                     GPU.ElementwiseSingle.Exp(AsFloatGPU(a), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementWiseSingle.Exp(AsFloatCPU(a), AsFloatCPU(dest));
+                    CPU.ElementwiseSingle.Exp(AsFloatCPU(a), AsFloatCPU(dest));
                 }
             }
+           
+            public static void Log(ITensorBuffer a, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingle.Log(AsFloatGPU(a), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseSingle.Log(AsFloatCPU(a), AsFloatCPU(dest));
+                }
+            }
+           
             public static void MatrixMult(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest, bool transA, bool transB) {
                 Device deviceType = AssertSameDeviceType(a, b, dest);
 
@@ -173,6 +198,46 @@
                 }
                 else {
                     CPU.MatrixMult.Compute(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest), transA, transB);
+                }
+            } 
+            public static void Max(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, b, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseBinary.Max(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseBinary.Max(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
+                }
+            }
+            public static void Max(ITensorBuffer a, float p, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingleParam.Max(AsFloatGPU(a), AsFloatGPU(dest), p);
+                }
+                else {
+                    CPU.ElementWiseFloatParam.Max(AsFloatCPU(a), AsFloatCPU(dest), p);
+                }
+            }
+            public static void Min(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, b, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseBinary.Min(AsFloatGPU(a), AsFloatGPU(b), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseBinary.Min(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
+                }
+            }
+            public static void Min(ITensorBuffer a, float p, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(a, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingleParam.Min(AsFloatGPU(a), AsFloatGPU(dest), p);
+                }
+                else {
+                    CPU.ElementWiseFloatParam.Min(AsFloatCPU(a), AsFloatCPU(dest), p);
                 }
             }
             public static void Multiply(ITensorBuffer a, float val, ITensorBuffer dest) {
@@ -195,6 +260,28 @@
                     CPU.ElementwiseBinary.Multiply(AsFloatCPU(a), AsFloatCPU(b), AsFloatCPU(dest));
                 }
             }
+
+            public static void OneHot(ITensorBuffer src, int depth, float on, float off, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(src, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.OneHot.Compute(AsIntGPU(src), depth, on, off, AsFloatGPU(dest));
+                }
+                else {
+                    CPU.OneHot.Compute(AsIntCPU(src), depth, on, off, AsFloatCPU(dest));
+                }
+            }
+
+            public static void ReduceMax(ITensorBuffer buffer, int[] axis, ITensorBuffer dest) {
+                Device d = buffer.device;
+
+                if (d == Device.gpu) {
+                    GPU.Reduction.Max(AsFloatGPU(buffer), axis, AsFloatGPU(dest));
+                }
+                else {
+                    CPU.Reduction.Max(AsFloatCPU(buffer), axis, AsFloatCPU(dest));
+                }
+            }
             public static void ReduceSum(ITensorBuffer buffer, int[] axis, ITensorBuffer dest) {
                 Device d = buffer.device;
 
@@ -212,14 +299,30 @@
                     GPU.ElementwiseSingle.ReLU(AsFloatGPU(a), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementWiseSingle.ReLU(AsFloatCPU(a), AsFloatCPU(dest));
+                    CPU.ElementwiseSingle.ReLU(AsFloatCPU(a), AsFloatCPU(dest));
+                }
+            }
+           
+            public static void SampleCategorical(ITensorBuffer src, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(src, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.SampleCategorical.Compute(AsFloatGPU(src), AsIntGPU(dest));
+                }
+                else {
+                    CPU.SampleCategorical.Compute(AsFloatCPU(src), AsIntCPU(dest));
                 }
             }
             public static void SetTo0s(ITensorBuffer buffer) {
                 Device d = buffer.device;
 
                 if (d == Device.gpu) {
-                    GPU.SetValues.Zero(AsFloatGPU(buffer));
+                    if (buffer.dtype == DType.Int) {
+                        GPU.SetValues.Zero(AsIntGPU(buffer));
+                    }
+                    else {
+                        GPU.SetValues.Zero(AsFloatGPU(buffer));
+                    }
                 }
                 else {
                     CPU.SetValues.Zero(AsFloatCPU(buffer));
@@ -242,7 +345,17 @@
                     GPU.ElementwiseSingle.Sqr(AsFloatGPU(src), AsFloatGPU(dest));
                 }
                 else {
-                    CPU.ElementWiseSingle.Sqr(AsFloatCPU(src), AsFloatCPU(dest));
+                    CPU.ElementwiseSingle.Sqr(AsFloatCPU(src), AsFloatCPU(dest));
+                }
+            }
+            public static void SquareRoot(ITensorBuffer src, ITensorBuffer dest) {
+                Device deviceType = AssertSameDeviceType(src, dest);
+
+                if (deviceType == Device.gpu) {
+                    GPU.ElementwiseSingle.Sqrt(AsFloatGPU(src), AsFloatGPU(dest));
+                }
+                else {
+                    CPU.ElementwiseSingle.Sqrt(AsFloatCPU(src), AsFloatCPU(dest));
                 }
             }
             public static void Subtract(ITensorBuffer a, ITensorBuffer b, ITensorBuffer dest) {
@@ -268,5 +381,4 @@
             }
         }
     }
-
 }

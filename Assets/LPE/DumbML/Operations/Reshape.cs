@@ -25,7 +25,7 @@ namespace DumbML {
         }
 
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
-            return new Operation[] { 
+            return new Operation[] {
                 new Reshape(error, inputs[0])
             };
         }

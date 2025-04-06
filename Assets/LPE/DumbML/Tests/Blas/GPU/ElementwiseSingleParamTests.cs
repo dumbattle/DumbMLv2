@@ -1,7 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
 using DumbML;
-using UnityEngine;
 
 
 namespace Tests.BLAS {
@@ -39,6 +38,28 @@ namespace Tests.BLAS {
                     (x, p) => {
                         FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(x.shape);
                         DumbML.BLAS.CPU.ElementWiseFloatParam.Add(x, result, p);
+                        return result;
+                    },
+                    v);
+            }   
+            [Test]
+            public void Min() {
+                float v = 4;
+                Run((a, b, p) => DumbML.BLAS.GPU.ElementwiseSingleParam.Min(a, b, p),
+                    (x, p) => {
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(x.shape);
+                        DumbML.BLAS.CPU.ElementWiseFloatParam.Min(x, result, p);
+                        return result;
+                    },
+                    v);
+            }
+            [Test]
+            public void Max() {
+                float v = 4;
+                Run((a, b, p) => DumbML.BLAS.GPU.ElementwiseSingleParam.Max(a, b, p),
+                    (x, p) => {
+                        FloatCPUTensorBuffer result = new FloatCPUTensorBuffer(x.shape);
+                        DumbML.BLAS.CPU.ElementWiseFloatParam.Max(x, result, p);
                         return result;
                     },
                     v);

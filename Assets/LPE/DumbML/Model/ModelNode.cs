@@ -20,6 +20,7 @@
 
         public void Forward() {
             op.Forward(inputBuffers, outputBuffer);
+            op.outputBuffer = outputBuffer;
         }
 
         public void Dispose() {

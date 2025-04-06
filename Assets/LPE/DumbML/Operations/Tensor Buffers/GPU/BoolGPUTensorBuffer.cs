@@ -8,7 +8,7 @@ namespace DumbML {
 
         protected override ComputeBuffer CreateNewBuffer(int count) {
             return new ComputeBuffer(count, 4);
-            return new ComputeBuffer(count, sizeof(bool));
+            //return new ComputeBuffer(count, sizeof(bool)); // sizeof(bool) = 1 ???
         }
     }
 }

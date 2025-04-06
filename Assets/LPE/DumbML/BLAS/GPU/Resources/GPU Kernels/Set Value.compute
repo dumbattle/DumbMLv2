@@ -1,25 +1,35 @@
-#pragma kernel Zero
-#pragma kernel One
+#pragma kernel Zerof
+#pragma kernel Zeroi
+#pragma kernel Onef
 
 
-RWStructuredBuffer<float> input;
+RWStructuredBuffer<float> input_f;
+RWStructuredBuffer<float> input_i;
 int count;
 
 
 [numthreads(64, 1, 1)]
-void One(uint3 id : SV_DispatchThreadID) {
+void Onef(uint3 id : SV_DispatchThreadID) {
     if (id.x > (uint)count) {
         return;
     }
-    input[id.x] = 1;
+    input_f[id.x] = 1;
 }
 
 
 [numthreads(64, 1, 1)]
-void Zero(uint3 id : SV_DispatchThreadID) {
+void Zerof(uint3 id : SV_DispatchThreadID) {
     if (id.x > (uint)count) {
         return;
     }
-    input[id.x] = 0;
+    input_f[id.x] = 0;
+}
+
+[numthreads(64, 1, 1)]
+void Zeroi(uint3 id : SV_DispatchThreadID) {
+    if (id.x > (uint)count) {
+        return;
+    }
+    input_i[id.x] = 0;
 }
 

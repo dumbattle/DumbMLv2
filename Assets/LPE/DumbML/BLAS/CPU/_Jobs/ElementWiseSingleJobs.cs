@@ -1,5 +1,7 @@
 ﻿using Unity.Jobs;
 using Unity.Collections;
+using UnityEngine;
+using Unity.Collections.LowLevel.Unsafe;
 
 
 namespace DumbML.BLAS.CPU {
@@ -64,6 +66,21 @@ namespace DumbML.BLAS.CPU {
             public void Execute(int index) {
                 var v = src[index];
                 result[index] = v * v;
+            }
+        }
+        public struct Sqrt : IJobParallelFor {
+            [NativeDisableContainerSafetyRestriction]
+            NativeArray<float> src;
+            [NativeDisableContainerSafetyRestriction]
+            public NativeArray<float> result;
+
+            public Sqrt(FloatCPUTensorBuffer src, FloatCPUTensorBuffer dest) {
+                this.src = src.buffer;
+                result = dest.buffer;
+            }
+            public void Execute(int index) {
+                var v = src[index];
+                result[index] = Mathf.Sqrt(v);
             }
         }
     }

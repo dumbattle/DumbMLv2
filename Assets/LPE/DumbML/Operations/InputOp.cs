@@ -8,10 +8,20 @@
             BuildOp(shape, DType.Float);
         }
 
-        public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) { }
+        public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+            if (inputs.Length == 0) {
+                return;
+            }
+            result.SetShape(inputs[0].shape);
+            BLAS.Engine.Compute.Copy(inputs[0], result);
+        }
 
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {
             return null;
+        }
+
+        public void SetSource(Operation src) {
+            BuildOp(shape, dtype, src);
         }
     }
 }

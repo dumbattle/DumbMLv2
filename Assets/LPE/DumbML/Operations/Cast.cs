@@ -6,6 +6,7 @@
         }
 
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
+            result.SetShape(inputs[0].shape);
             BLAS.Engine.Compute.Cast(inputs[0], result);
         }
         public override Operation[] BuildBackwards(Operation[] inputs, Operation output, Operation error) {

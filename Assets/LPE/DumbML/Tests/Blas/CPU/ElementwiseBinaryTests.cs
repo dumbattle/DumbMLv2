@@ -100,5 +100,13 @@ namespace Tests.BLAS.CPU {
         public void Subtract() {
             Run((a, b, r) => DumbML.BLAS.CPU.ElementwiseBinary.Subtract(a, b, r), (a, b) => a - b);
         }
+        [Test]
+        public void Min() {
+            Run((a, b, r) => DumbML.BLAS.CPU.ElementwiseBinary.Min(a, b, r), (a, b) => a < b ? a : b);
+        }
+        [Test]
+        public void Max() {
+            Run((a, b, r) => DumbML.BLAS.CPU.ElementwiseBinary.Max(a, b, r), (a, b) => a < b ? b : a);
+        }
     }
 }

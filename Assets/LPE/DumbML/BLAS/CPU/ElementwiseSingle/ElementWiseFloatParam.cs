@@ -24,6 +24,24 @@ namespace DumbML.BLAS.CPU {
             var h = j.Schedule(input.size, 64);
             h.Complete();
         }
+        public static void Max(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest, float val) {
+            if (!input.shape.CompareContents(dest.shape)) {
+                throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
+            }
+
+            var j = new ElementwiseFloatParamJobs.Max(input, val, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+        }
+        public static void Min(FloatCPUTensorBuffer input, FloatCPUTensorBuffer dest, float val) {
+            if (!input.shape.CompareContents(dest.shape)) {
+                throw new InvalidOperationException($"Destination tensor does not have same shape as input: {input.shape.ContentString()}, {dest.shape.ContentString()}");
+            }
+
+            var j = new ElementwiseFloatParamJobs.Min(input, val, dest);
+            var h = j.Schedule(input.size, 64);
+            h.Complete();
+        }
 
 
 

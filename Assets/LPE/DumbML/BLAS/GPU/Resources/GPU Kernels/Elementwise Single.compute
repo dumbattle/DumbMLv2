@@ -19,6 +19,9 @@
 #pragma kernel Sqr
 #pragma kernel Sqr_Inplace
 
+#pragma kernel Sqrt
+#pragma kernel Sqrt_Inplace
+
 
 #define BUILD(n) \
     [numthreads(64, 1, 1)]\
@@ -65,7 +68,7 @@ void _LeakyReLU(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x
 BUILD(LeakyReLU)
 
 void _Log(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
-    o[x] = log(i[x]);
+    o[x] = log(i[x] + .0000001f);
 }
 BUILD(Log)
 
@@ -80,3 +83,10 @@ void _Sqr(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
     o[x] = val * val;
 }
 BUILD(Sqr)
+
+
+void _Sqrt(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float val = i[x];
+    o[x] = sqrt(val);
+}
+BUILD(Sqrt)

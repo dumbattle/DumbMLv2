@@ -24,7 +24,6 @@ namespace DumbML {
                 this.shape[i] = s;
                 size *= s;
             }
-
             buffer = new NativeArray<T>(size, Allocator.Persistent); 
         }
         public void SetShape(int[] shape) {

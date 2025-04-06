@@ -1,4 +1,6 @@
 ﻿using System;
+using UnityEditor.PackageManager;
+using UnityEngine;
 
 
 namespace DumbML {
@@ -16,7 +18,6 @@ namespace DumbML {
             ValidateDims();
             shapeActual = BuildShape(input.shape, shapeActual);
             BuildOp(shapeActual, input.dtype, input);
-
 
             void HandleNegatives() {
                 for (int i = 0; i < this.dims.Length; i++) {
@@ -84,7 +85,6 @@ namespace DumbML {
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
             shapeActual = BuildShape(inputs[0].shape, shapeActual);
             result.SetShape(shapeActual);
-
             BLAS.Engine.Compute.Copy(inputs[0], result, true);
         }
 

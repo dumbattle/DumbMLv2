@@ -2,6 +2,10 @@
 #pragma kernel Add_Inplace
 #pragma kernel Multiply
 #pragma kernel Multiply_Inplace
+#pragma kernel Max
+#pragma kernel Max_Inplace
+#pragma kernel Min
+#pragma kernel Min_Inplace
 
 #define BUILD(n) \
     [numthreads(64, 1, 1)]\
@@ -35,4 +39,15 @@ void _Multiply(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x)
     o[x] = i[x] * p;
 }
 BUILD(Multiply)
+void _Max(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float v = i[x];
+    o[x] = p > v ? p : v;
+}
+BUILD(Max)
+
+void _Min(RWStructuredBuffer<float> i, RWStructuredBuffer<float> o, uint x) {
+    float v = i[x];
+    o[x] = p < v ? p : v;
+}
+BUILD(Min)
 

@@ -83,7 +83,6 @@ uint GetOShape(uint ind) {
 }
 
 
-
 uint2 GetIndices(uint x) {
     uint ind_raw = x;
 

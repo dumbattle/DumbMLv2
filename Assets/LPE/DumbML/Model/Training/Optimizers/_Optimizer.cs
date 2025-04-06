@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 
 namespace DumbML {
@@ -6,7 +7,7 @@ namespace DumbML {
         public Gradients grad { get; protected set; }
         public bool IsBuilt { get; protected set; }
 
-        Dictionary<Variable, ITensorBuffer> weightBuffers = new Dictionary<Variable, ITensorBuffer>();
+        public List<Variable> variables;
 
 
 
@@ -22,11 +23,7 @@ namespace DumbML {
         public virtual void InitializeGradients(Gradients g) {
             grad = g;
             IsBuilt = true;
-
-            weightBuffers = CreateBufferDict(g);
-            foreach (var (v, b) in weightBuffers) {
-                b.CopyFrom(v.value);
-            }
+            variables = (from x in g.keys where x is Variable select (Variable)x).ToList();
         }
 
 
@@ -35,22 +32,21 @@ namespace DumbML {
         }
 
         public virtual void Update() {
-            foreach (var (v, buf) in weightBuffers) {
+            foreach (var v in variables) {
                 // not trainable 
                 if (!v.trainable) {
                     continue;
                 }
 
                 ITensorBuffer gradBuffer = grad[v];
-                UpdateWeight(v, gradBuffer, buf);
-                buf.CopyTo(v.value);
+                UpdateWeight(v, gradBuffer, v.buffer);
+                v.MarkBufferUpdated();
             }
         }
 
         public abstract void UpdateWeight(Variable variable, ITensorBuffer grad, ITensorBuffer variableBuffer);
 
         public virtual void Dispose() {
-            DisposeBufferDict(weightBuffers);
         }
     
         protected void DisposeBufferDict(Dictionary<Variable, ITensorBuffer> d) {

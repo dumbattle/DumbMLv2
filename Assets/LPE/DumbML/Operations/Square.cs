@@ -4,7 +4,6 @@
             BuildOp(a.shape, DType.Float, a);
         }
 
-
         public override void Forward(ITensorBuffer[] inputs, ITensorBuffer result) {
             result.SetShape(inputs[0].shape);
             BLAS.Engine.Compute.Square(inputs[0], result);

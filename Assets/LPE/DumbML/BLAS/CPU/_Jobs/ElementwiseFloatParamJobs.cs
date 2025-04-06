@@ -33,5 +33,37 @@ namespace DumbML.BLAS.CPU {
                 result[i] = src[i] * p;
             }
         }
+
+        public struct Max : IJobParallelFor {
+            NativeArray<float> src;
+            [NativeDisableContainerSafetyRestriction]
+            NativeArray<float> result;
+            float p;
+            public Max(FloatCPUTensorBuffer src, float p, FloatCPUTensorBuffer dest) {
+                this.src = src.buffer;
+                result = dest.buffer;
+                this.p = p;
+            }
+            public void Execute(int i) {
+                var s = src[i];
+                result[i] = src[i] < p ? p : s;
+            }
+        }
+
+        public struct Min : IJobParallelFor {
+            NativeArray<float> src;
+            [NativeDisableContainerSafetyRestriction]
+            NativeArray<float> result;
+            float p;
+            public Min(FloatCPUTensorBuffer src, float p, FloatCPUTensorBuffer dest) {
+                this.src = src.buffer;
+                result = dest.buffer;
+                this.p = p;
+            }
+            public void Execute(int i) {
+                var s = src[i];
+                result[i] = src[i] > p ? p : s;
+            }
+        }
     }
 }
